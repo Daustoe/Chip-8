@@ -1,4 +1,4 @@
-__author__ = 'cjpowell'
+__author__ = 'Clayton Powell'
 import pygame
 import sys
 
@@ -18,12 +18,11 @@ fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
          0xF0, 0x80, 0x80, 0x80, 0xF0,  # C
          0xE0, 0x90, 0x90, 0x90, 0xE0,  # D
          0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
-         0xF0, 0x80, 0xF0, 0x80, 0x80  # F
-]
+         0xF0, 0x80, 0xF0, 0x80, 0x80]  # F
 
 
 class CPU(object):
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.memory = [0] * 4096  # 4096 bits
         self.gpio = [0] * 16  # max 16
         self.console = [0] * 64 * 32  # Display console is 64 x 32 pixels
@@ -84,14 +83,15 @@ class CPU(object):
             self.memory[index + 0x200] = ord(rom[index])
 
     def cycle(self):
-        self.opcode = self.memory[self.pc]
-
-        # TODO process this opcode here
-
-        # After
+        self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         self.pc += 2
-
-        # decrement timers
+        self.vx = (self.opcode & 0x0f00) >> 8
+        self.vy = (self.opcode & 0x00f0) >> 4
+        new_opcode = self.opcode & 0xf000
+        try:
+            self.op_map[new_opcode]()
+        except:
+            print "unknown instruction: %X" % self.opcode
         if self.delay_timer > 0:
             self.delay_timer -= 1
         if self.sound_timer > 0:
@@ -100,17 +100,138 @@ class CPU(object):
                 # Play a sound!
                 pass
 
+    def _0ZZZ(self):
+        new_op = self.opcode & 0xf0ff
+        try:
+            self.op_map[new_op]()
+        except:
+            print "Unknown instruction: %X" % self.opcode
+
+    def _0ZZ0(self):
+        """
+        Clears the screen
+        :return:
+        """
+
+    def _0ZZE(self):
+        pass
+
+    def _1ZZZ(self):
+        pass
+
+    def _2ZZZ(self):
+        pass
+
+    def _3ZZZ(self):
+        pass
+
+    def _4ZZZ(self):
+        pass
+
+    def _5ZZZ(self):
+        pass
+
+    def _6ZZZ(self):
+        pass
+
+    def _7ZZZ(self):
+        pass
+
+    def _8ZZZ(self):
+        pass
+
+    def _8ZZ0(self):
+        pass
+
+    def _8ZZ1(self):
+        pass
+
+    def _8ZZ2(self):
+        pass
+
+    def _8ZZ3(self):
+        pass
+
+    def _8ZZ4(self):
+        pass
+
+    def _8ZZ5(self):
+        pass
+
+    def _8ZZ6(self):
+        pass
+
+    def _8ZZ7(self):
+        pass
+
+    def _8ZZE(self):
+        pass
+
+    def _9ZZZ(self):
+        pass
+
+    def _AZZZ(self):
+        pass
+
+    def _BZZZ(self):
+        pass
+
+    def _CZZZ(self):
+        pass
+
+    def _DZZZ(self):
+        pass
+
+    def _EZZZ(self):
+        pass
+
+    def _EZZE(self):
+        pass
+
+    def _EZZ1(self):
+        pass
+
+    def _FZZZ(self):
+        pass
+
+    def _FZ07(self):
+        pass
+
+    def _FZ0A(self):
+        pass
+
+    def _FZ15(self):
+        pass
+
+    def _FZ18(self):
+        pass
+
+    def _FZ1E(self):
+        pass
+
+    def _FZ29(self):
+        pass
+
+    def _FZ33(self):
+        pass
+
+    def _FZ55(self):
+        pass
+
+    def _FZ65(self):
+        pass
+
 
 if __name__ == '__main__':
     pygame.init()
     console = pygame.display.set_mode((640, 320))
     pixel = pygame.image.load('pixel.png')
-    pixelrect = pixel.get_rect()
+    pixel_rect = pixel.get_rect()
     emulator = CPU()
     while 1:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
         console.fill((0, 0, 0))
-        console.blit(pixel, pixelrect)
+        console.blit(pixel, pixel_rect)
         pygame.display.flip()
