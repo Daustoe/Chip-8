@@ -112,12 +112,22 @@ class CPU(object):
         Clears the screen
         :return:
         """
+        self.console = [0] * 64 * 32
+        self.should_draw = True
 
     def _0ZZE(self):
-        pass
+        """
+        Returns from subroutine
+        :return:
+        """
+        self.pc = self.stack.pop()
 
     def _1ZZZ(self):
-        pass
+        """
+        Jumps to address ZZZ
+        :return:
+        """
+        self.pc = self.opcode & 0x0fff
 
     def _2ZZZ(self):
         pass
@@ -126,10 +136,20 @@ class CPU(object):
         pass
 
     def _4ZZZ(self):
-        pass
+        """
+        Skips the next instruction if VX doesn't equal NN.
+        :return:
+        """
+        if self.gpio[self.vx] != (self.opcode & 0x00ff):
+            self.pc += 2
 
     def _5ZZZ(self):
-        pass
+        """
+        Skips the next instruction if VX equals VY
+        :return:
+        """
+        if self.gpio[self.vx] == self.gpio[self.vy]:
+            self.pc += 2
 
     def _6ZZZ(self):
         pass
@@ -153,7 +173,16 @@ class CPU(object):
         pass
 
     def _8ZZ4(self):
-        pass
+        """
+        Adds VY to VX. VF is set to 1 when there is a carry, and to 0 when there isn't.
+        :return:
+        """
+        if self.gpio[self.vx] + self.gpio[self.vy] > 0xff:
+            self.gpio[0xf] = 1
+        else:
+            self.gpio[0xf] = 0
+        self.gpio[self.vx] += self.gpio[self.vy]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZ5(self):
         pass
