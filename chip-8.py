@@ -1,6 +1,7 @@
 __author__ = 'Clayton Powell'
 import pygame
 import sys
+import random
 
 
 fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
@@ -21,6 +22,7 @@ fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
          0xF0, 0x80, 0xF0, 0x80, 0x80]  # F
 
 
+# noinspection PyPep8Naming
 class CPU(object):
     def __init__(self):
         self.memory = [0] * 4096  # 4096 bits
@@ -34,6 +36,8 @@ class CPU(object):
         self.sound_timer = 0
         self.should_draw = False
         self.pc = 0x200
+        self.vx = 0
+        self.vy = 0
 
         for i in range(0, 80):
             self.memory[i] = fonts[i]
@@ -82,16 +86,19 @@ class CPU(object):
         for index in range(0, len(rom)):
             self.memory[index + 0x200] = ord(rom[index])
 
+    def op_filter(self, opcode):
+        try:
+            # noinspection PyCallingNonCallable
+            self.op_map[opcode]()
+        except KeyError:
+            print "Unknown instruction: %X" % self.opcode
+
     def cycle(self):
         self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         self.pc += 2
         self.vx = (self.opcode & 0x0f00) >> 8
         self.vy = (self.opcode & 0x00f0) >> 4
-        new_opcode = self.opcode & 0xf000
-        try:
-            self.op_map[new_opcode]()
-        except:
-            print "unknown instruction: %X" % self.opcode
+        self.op_filter(self.opcode & 0xf000)
         if self.delay_timer > 0:
             self.delay_timer -= 1
         if self.sound_timer > 0:
@@ -100,83 +107,89 @@ class CPU(object):
                 # Play a sound!
                 pass
 
+    def get_key(self):
+        for index in range(16):
+            if self.key_inputs[index] == 1:
+                return index
+        return -1
+
+    def draw(self):
+        if self.should_draw:
+            pass
+
     def _0ZZZ(self):
-        new_op = self.opcode & 0xf0ff
-        try:
-            self.op_map[new_op]()
-        except:
-            print "Unknown instruction: %X" % self.opcode
+        # passes off to other opcode calls
+        self.op_filter(self.opcode & 0xf0ff)
 
     def _0ZZ0(self):
-        """
-        Clears the screen
-        :return:
-        """
+        # Clears the screen
         self.console = [0] * 64 * 32
         self.should_draw = True
 
     def _0ZZE(self):
-        """
-        Returns from subroutine
-        :return:
-        """
+        # Returns from subroutine
         self.pc = self.stack.pop()
 
     def _1ZZZ(self):
-        """
-        Jumps to address ZZZ
-        :return:
-        """
+        # Jumps to address NNN
         self.pc = self.opcode & 0x0fff
 
     def _2ZZZ(self):
-        pass
+        # Calls subroutine at NNN
+        self.stack.append(self.pc)
+        self.pc = self.opcode & 0x0fff
 
     def _3ZZZ(self):
-        pass
+        # Skips the next instruction if VX equals NN
+        if self.gpio[self.vx] == (self.opcode & 0x00ff):
+            self.pc += 2
 
     def _4ZZZ(self):
-        """
-        Skips the next instruction if VX doesn't equal NN.
-        :return:
-        """
+        # Skips the next instruction if VX doesn't equal NN.
         if self.gpio[self.vx] != (self.opcode & 0x00ff):
             self.pc += 2
 
     def _5ZZZ(self):
-        """
-        Skips the next instruction if VX equals VY
-        :return:
-        """
+        # Skips the next instruction if VX equals VY
         if self.gpio[self.vx] == self.gpio[self.vy]:
             self.pc += 2
 
     def _6ZZZ(self):
-        pass
+        # Sets VX to NN
+        self.gpio[self.vx] = (self.opcode & 0x00ff)
 
     def _7ZZZ(self):
-        pass
+        # Adds NN to VX
+        self.gpio[self.vx] += (self.opcode & 0x00ff)
 
     def _8ZZZ(self):
-        pass
+        # Sets VX to the value of VY
+        extracted_op = self.opcode & 0xf00f
+        extracted_op += 0xff0
+        self.op_filter(extracted_op)
 
     def _8ZZ0(self):
-        pass
+        # Sets VX to the value of VY
+        self.gpio[self.vx] = self.gpio[self.vy]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZ1(self):
-        pass
+        # Sets VX to (VX or VY)
+        self.gpio[self.vx] |= self.gpio[self.vy]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZ2(self):
-        pass
+        # Sets VX to (VX and VY)
+        self.gpio[self.vx] &= self.gpio[self.vy]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZ3(self):
-        pass
+        # Sets VX to (VX xor VY)
+        self.gpio[self.vx] ^= self.gpio[self.vy]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZ4(self):
-        """
-        Adds VY to VX. VF is set to 1 when there is a carry, and to 0 when there isn't.
-        :return:
-        """
+        # Adds VY to VX. VF is set to 1 when there is a carry, and to 0 when there isn't.
         if self.gpio[self.vx] + self.gpio[self.vy] > 0xff:
             self.gpio[0xf] = 1
         else:
@@ -185,70 +198,146 @@ class CPU(object):
         self.gpio[self.vx] &= 0xff
 
     def _8ZZ5(self):
-        pass
+        # VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't
+        if self.gpio[self.vy] > self.gpio[self.vx]:
+            self.gpio[0xf] = 0
+        else:
+            self.gpio[0xf] = 1
+        self.gpio[self.vx] -= self.gpio[self.vy]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZ6(self):
-        pass
+        # Shifts VX right by one. VF is set to the value of the least significant bit of VX before the shift.
+        self.gpio[0xf] = self.gpio[self.vx] & 0x0001
+        self.gpio[self.vx] >>= 1
 
     def _8ZZ7(self):
-        pass
+        # Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
+        if self.gpio[self.vx] > self.gpio[self.vy]:
+            self.gpio[0xf] = 0
+        else:
+            self.gpio[0xf] = 1
+        self.gpio[self.vx] = self.gpio[self.vy] - self.gpio[self.vx]
+        self.gpio[self.vx] &= 0xff
 
     def _8ZZE(self):
-        pass
+        # Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift.
+        self.gpio[0xf] = (self.gpio[self.vx] & 0x00f0) >> 7
+        self.gpio[self.vx] <<= 1
+        self.gpio[self.vx] &= 0xff
 
     def _9ZZZ(self):
-        pass
+        # Skips the next instruction if VX doesn't equal VY
+        if self.gpio[self.vx] != self.gpio[self.vy]:
+            self.pc += 2
 
     def _AZZZ(self):
-        pass
+        # Sets I to the address NNN
+        self.index = self.opcode & 0x0fff
 
     def _BZZZ(self):
-        pass
+        # Jumps to the address NNN plus V0
+        self.pc = (self.opcode & 0x0fff) + self.gpio[0]
 
     def _CZZZ(self):
-        pass
+        # Sets VX to a random number and NN
+        random_number = int(random.random())
+        self.gpio[self.vx] = random_number & (self.opcode & 0x00ff)
+        self.gpio[self.vx] &= 0xff
 
     def _DZZZ(self):
-        pass
+        # Draw a sprite
+        self.gpio[0xf] = 0
+        x = self.gpio[self.vx] & 0xff
+        y = self.gpio[self.vy] & 0xff
+        height = self.opcode & 0x000f
+        row = 0
+        while row < height:
+            current_row = self.memory[row + self.index]
+            pixel_offset = 0
+            while pixel_offset < 8:
+                location = x + pixel_offset + ((y + row) * 64)
+                pixel_offset += 1
+                if (y + row) >= 32 or (x + pixel_offset - 1) >= 64:
+                    continue
+                mask = 1 << 8 - pixel_offset
+                current_pixel = (current_row & mask) >> (8 - pixel_offset)
+                self.console[location] ^= current_pixel
+                if self.console[location] == 0:
+                    self.gpio[0xf] = 1
+                else:
+                    self.gpio[0xf] = 0
+            row += 1
+        self.should_draw = True
 
     def _EZZZ(self):
-        pass
+        self.op_filter(self.opcode & 0xf00f)
 
     def _EZZE(self):
-        pass
+        # Skips the next instruction if the key stored in VX is pressed
+        key = self.gpio[self.vx] & 0xf
+        if self.key_inputs[key] == 1:
+            self.pc += 2
 
     def _EZZ1(self):
-        pass
+        # Skips the next instruction if the key stored in VX isn't pressed
+        key = self.gpio[self.vx] & 0xf
+        if self.key_inputs[key] == 0:
+            self.pc += 2
 
     def _FZZZ(self):
-        pass
+        self.op_filter(self.opcode & 0xf0ff)
 
     def _FZ07(self):
-        pass
+        # Sets VX to the value of the delay timer
+        self.gpio[self.vx] = self.delay_timer
 
     def _FZ0A(self):
-        pass
+        # A key press is awaited, and then stored in VX
+        ret = self.get_key()
+        if ret >= 0:
+            self.gpio[self.vx] = ret
+        else:
+            self.pc -= 2
 
     def _FZ15(self):
-        pass
+        # Sets the delay timer to VX
+        self.delay_timer = self.gpio[self.vx]
 
     def _FZ18(self):
-        pass
+        # Sets the sound timer to VX
+        self.sound_timer = self.gpio[self.vx]
 
     def _FZ1E(self):
-        pass
+        # Adds VX to I. If overflow, VF = 1
+        self.index += self.gpio[self.vx]
+        if self.index > 0xfff:
+            self.gpio[0xf] = 1
+            self.index &= 0xfff
+        else:
+            self.gpio[0xf] = 0
 
     def _FZ29(self):
-        pass
+        # Set index to point to a character
+        self.index = (5 * (self.gpio[self.vx])) & 0xfff
 
     def _FZ33(self):
-        pass
+        # Store a number as BCD
+        self.memory[self.index] = self.gpio[self.vx] / 100
+        self.memory[self.index + 1] = (self.gpio[self.vx] % 100) / 10
+        self.memory[self.index + 2] = self.gpio[self.vx] % 10
 
     def _FZ55(self):
-        pass
+        # Stores V0 to VX in memory starting at address I
+        for index in range(0, self.vx):
+            self.memory[self.index + index] = self.gpio[index]
+        self.index += self.vx + 1
 
     def _FZ65(self):
-        pass
+        # Fills V0 to VX with values from memory starting at address I
+        for index in range(0, self.vx):
+            self.gpio[index] = self.memory[self.index + index]
+        self.index += self.vx + 1
 
 
 if __name__ == '__main__':
