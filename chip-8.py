@@ -21,6 +21,23 @@ fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
          0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
          0xF0, 0x80, 0xF0, 0x80, 0x80]  # F
 
+key_map = {pygame.K_1: 0x1,
+           pygame.K_2: 0x2,
+           pygame.K_3: 0x3,
+           pygame.K_4: 0xc,
+           pygame.K_q: 0x4,
+           pygame.K_w: 0x5,
+           pygame.K_e: 0x6,
+           pygame.K_r: 0xd,
+           pygame.K_a: 0x7,
+           pygame.K_s: 0x8,
+           pygame.K_d: 0x9,
+           pygame.K_f: 0xe,
+           pygame.K_z: 0xa,
+           pygame.K_x: 0,
+           pygame.K_c: 0xb,
+           pygame.K_v: 0xf}
+
 
 # noinspection PyPep8Naming
 class CPU(object):
@@ -129,7 +146,6 @@ class CPU(object):
     def _0ZZ0(self):
         # Clears the screen
         self.console = [0] * 64 * 32
-        self.should_draw = True
 
     def _0ZZE(self):
         # Returns from subroutine
@@ -257,7 +273,6 @@ class CPU(object):
         y = self.gpio[self.vy] & 0xff
         height = self.opcode & 0x000f
         row = 0
-        console.fill(0, 0, 0)
         while row < height:
             current_row = self.memory[row + self.index]
             pixel_offset = 0
@@ -271,11 +286,12 @@ class CPU(object):
                 self.console[location] ^= current_pixel
                 if self.console[location] == 0:
                     self.gpio[0xf] = 1
+                    console.blit(black_pixel, ((location % 64) * 10, ((location / 64) * 10)))
                 else:
                     self.gpio[0xf] = 0
+                    console.blit(white_pixel, ((location % 64) * 10, ((location / 64) * 10)))
             row += 1
-        console.blit(pixel, (((x + y) % 64) * 10, 310 - (((x + y) / 64) * 10)))
-        self.should_draw = True
+        pygame.display.update()
 
     def _EZZZ(self):
         self.op_filter(self.opcode & 0xf00f)
@@ -350,15 +366,23 @@ class CPU(object):
 if __name__ == '__main__':
     pygame.init()
     console = pygame.display.set_mode((640, 320))
-    pixel = pygame.image.load('pixel.png')
-    pixel_rect = pixel.get_rect()
+    white_pixel = pygame.image.load('pixel.png')
+    black_pixel = pygame.Surface((10, 10))
+    black_pixel.fill((0, 0, 0))
+    pixel_rect = white_pixel.get_rect()
     emulator = CPU()
     emulator.load_rom('games/PONG')
     clock = pygame.time.Clock()
     while True:
-        clock.tick(10)
+        clock.tick(1000)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key in key_map:
+                    emulator.key_inputs[key_map[event.key]] = 1
+            elif event.type == pygame.KEYUP:
+                if event.key in key_map:
+                    emulator.key_inputs[key_map[event.key]] = 0
         emulator.cycle()
         emulator.draw()
