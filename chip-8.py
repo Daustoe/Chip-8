@@ -34,7 +34,7 @@ class CPU(object):
         self.index = 0
         self.delay_timer = 0
         self.sound_timer = 0
-        self.should_draw = False
+        self.should_draw = True
         self.pc = 0x200
         self.vx = 0
         self.vy = 0
@@ -115,7 +115,12 @@ class CPU(object):
 
     def draw(self):
         if self.should_draw:
-            pass
+            #console.fill((0, 0, 0))
+            #for index in range(2048):
+             #   if self.console[index] == 1:
+              #      console.blit(pixel, ((index % 64) * 10, 310 - ((index / 64) * 10)))
+            pygame.display.update()
+            self.should_draw = False
 
     def _0ZZZ(self):
         # passes off to other opcode calls
@@ -252,6 +257,7 @@ class CPU(object):
         y = self.gpio[self.vy] & 0xff
         height = self.opcode & 0x000f
         row = 0
+        console.fill(0, 0, 0)
         while row < height:
             current_row = self.memory[row + self.index]
             pixel_offset = 0
@@ -268,6 +274,7 @@ class CPU(object):
                 else:
                     self.gpio[0xf] = 0
             row += 1
+        console.blit(pixel, (((x + y) % 64) * 10, 310 - (((x + y) / 64) * 10)))
         self.should_draw = True
 
     def _EZZZ(self):
@@ -346,10 +353,12 @@ if __name__ == '__main__':
     pixel = pygame.image.load('pixel.png')
     pixel_rect = pixel.get_rect()
     emulator = CPU()
-    while 1:
+    emulator.load_rom('games/PONG')
+    clock = pygame.time.Clock()
+    while True:
+        clock.tick(10)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-        console.fill((0, 0, 0))
-        console.blit(pixel, pixel_rect)
-        pygame.display.flip()
+        emulator.cycle()
+        emulator.draw()
