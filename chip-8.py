@@ -146,6 +146,7 @@ class CPU(object):
     def _0ZZ0(self):
         # Clears the screen
         self.console = [0] * 64 * 32
+        console.fill((0, 0, 0))
 
     def _0ZZE(self):
         # Returns from subroutine
@@ -371,10 +372,11 @@ if __name__ == '__main__':
     black_pixel.fill((0, 0, 0))
     pixel_rect = white_pixel.get_rect()
     emulator = CPU()
-    emulator.load_rom('games/PONG')
+    emulator.load_rom('games/PONG2')
     clock = pygame.time.Clock()
     while True:
-        clock.tick(1000)
+        clock.tick(500)
+        print hex(emulator.opcode)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
