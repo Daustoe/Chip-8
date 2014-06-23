@@ -284,12 +284,14 @@ class CPU(object):
                     continue
                 mask = 1 << 8 - pixel_offset
                 current_pixel = (current_row & mask) >> (8 - pixel_offset)
-                self.console[location] ^= current_pixel
-                if self.console[location] == 0:
+                if self.console[location == 1 and current_pixel == 1]:
                     self.gpio[0xf] = 1
-                    console.blit(black_pixel, ((location % 64) * 10, ((location / 64) * 10)))
                 else:
                     self.gpio[0xf] = 0
+                self.console[location] ^= current_pixel
+                if self.console[location] == 0:
+                    console.blit(black_pixel, ((location % 64) * 10, ((location / 64) * 10)))
+                else:
                     console.blit(white_pixel, ((location % 64) * 10, ((location / 64) * 10)))
             row += 1
         pygame.display.update()
@@ -372,10 +374,10 @@ if __name__ == '__main__':
     black_pixel.fill((0, 0, 0))
     pixel_rect = white_pixel.get_rect()
     emulator = CPU()
-    emulator.load_rom('games/PONG2')
+    emulator.load_rom('games/TETRIS')
     clock = pygame.time.Clock()
     while True:
-        clock.tick(500)
+        clock.tick(100)
         print hex(emulator.opcode)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
