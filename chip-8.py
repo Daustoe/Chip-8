@@ -4,6 +4,9 @@ import sys
 import random
 
 
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+pixel_size = (10, 10)
 fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
          0x20, 0x60, 0x20, 0x20, 0x70,  # 1
          0xF0, 0x10, 0xF0, 0x80, 0xF0,  # 2
@@ -132,7 +135,7 @@ class CPU(object):
 
     def draw(self):
         if self.should_draw:
-            #console.fill((0, 0, 0))
+            #console.fill(BLACK)
             #for index in range(2048):
              #   if self.console[index] == 1:
               #      console.blit(pixel, ((index % 64) * 10, 310 - ((index / 64) * 10)))
@@ -146,7 +149,7 @@ class CPU(object):
     def _0ZZ0(self):
         # Clears the screen
         self.console = [0] * 64 * 32
-        console.fill((0, 0, 0))
+        console.fill(BLACK)
 
     def _0ZZE(self):
         # Returns from subroutine
@@ -369,16 +372,15 @@ class CPU(object):
 if __name__ == '__main__':
     pygame.init()
     console = pygame.display.set_mode((640, 320))
-    white_pixel = pygame.image.load('pixel.png')
-    black_pixel = pygame.Surface((10, 10))
-    black_pixel.fill((0, 0, 0))
-    pixel_rect = white_pixel.get_rect()
+    white_pixel = pygame.Surface(pixel_size)
+    white_pixel.fill(WHITE)
+    black_pixel = pygame.Surface(pixel_size)
+    black_pixel.fill(BLACK)
     emulator = CPU()
-    emulator.load_rom('games/TETRIS')
+    emulator.load_rom('games/TICTAC')
     clock = pygame.time.Clock()
     while True:
         clock.tick(100)
-        print hex(emulator.opcode)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
