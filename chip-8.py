@@ -83,19 +83,19 @@ class CPU(object):
                        0x8FF7: self._8ZZ7,
                        0x8FFE: self._8ZZE,
                        0x9000: self._9ZZZ,
-                       0xA000: self._AZZZ,
-                       0xB000: self._BZZZ,
-                       0xC000: self._CZZZ,
-                       0xD000: self._DZZZ,
-                       0xE000: self._EZZZ,
-                       0xE00E: self._EZZE,
-                       0xE001: self._EZZ1,
-                       0xF000: self._FZZZ,
-                       0xF007: self._FZ07,
-                       0xF00A: self._FZ0A,
-                       0xF015: self._FZ15,
-                       0xF018: self._FZ18,
-                       0xF01E: self._FZ1E,
+                       0xA000: self.set_index,
+                       0xB000: self.jump_addr_plus_V0,
+                       0xC000: self.set_VX_nn_and_rand,
+                       0xD000: self.draw_sprite,
+                       0xE000: self.e_filter,
+                       0xE00E: self.skip_if_key_pressed,
+                       0xE001: self.skip_if_key_not_pressed,
+                       0xF000: self.f_filter,
+                       0xF007: self.set_VX_to_delay_timer,
+                       0xF00A: self.key_input,
+                       0xF015: self.set_delay_timer,
+                       0xF018: self.set_sound_timer,
+                       0xF01E: self.add_VX_to_input,
                        0xF029: self._FZ29,
                        0xF033: self._FZ33,
                        0xF055: self._FZ55,
@@ -256,21 +256,21 @@ class CPU(object):
         if self.gpio[self.vx] != self.gpio[self.vy]:
             self.pc += 2
 
-    def _AZZZ(self):
+    def set_index(self):
         # Sets I to the address NNN
         self.index = self.opcode & 0x0fff
 
-    def _BZZZ(self):
+    def jump_addr_plus_V0(self):
         # Jumps to the address NNN plus V0
         self.pc = (self.opcode & 0x0fff) + self.gpio[0]
 
-    def _CZZZ(self):
+    def set_VX_nn_and_rand(self):
         # Sets VX to a random number and NN
         random_number = int(random.random())
         self.gpio[self.vx] = random_number & (self.opcode & 0x00ff)
         self.gpio[self.vx] &= 0xff
 
-    def _DZZZ(self):
+    def draw_sprite(self):
         # Draw a sprite
         self.gpio[0xf] = 0
         x = self.gpio[self.vx] & 0xff
@@ -299,29 +299,29 @@ class CPU(object):
             row += 1
         pygame.display.update()
 
-    def _EZZZ(self):
+    def e_filter(self):
         self.op_filter(self.opcode & 0xf00f)
 
-    def _EZZE(self):
+    def skip_if_key_pressed(self):
         # Skips the next instruction if the key stored in VX is pressed
         key = self.gpio[self.vx] & 0xf
         if self.key_inputs[key] == 1:
             self.pc += 2
 
-    def _EZZ1(self):
+    def skip_if_key_not_pressed(self):
         # Skips the next instruction if the key stored in VX isn't pressed
         key = self.gpio[self.vx] & 0xf
         if self.key_inputs[key] == 0:
             self.pc += 2
 
-    def _FZZZ(self):
+    def f_filter(self):
         self.op_filter(self.opcode & 0xf0ff)
 
-    def _FZ07(self):
+    def set_VX_to_delay_timer(self):
         # Sets VX to the value of the delay timer
         self.gpio[self.vx] = self.delay_timer
 
-    def _FZ0A(self):
+    def key_input(self):
         # A key press is awaited, and then stored in VX
         ret = self.get_key()
         if ret >= 0:
@@ -329,15 +329,15 @@ class CPU(object):
         else:
             self.pc -= 2
 
-    def _FZ15(self):
+    def set_delay_timer(self):
         # Sets the delay timer to VX
         self.delay_timer = self.gpio[self.vx]
 
-    def _FZ18(self):
+    def set_sound_timer(self):
         # Sets the sound timer to VX
         self.sound_timer = self.gpio[self.vx]
 
-    def _FZ1E(self):
+    def add_VX_to_input(self):
         # Adds VX to I. If overflow, VF = 1
         self.index += self.gpio[self.vx]
         if self.index > 0xfff:
