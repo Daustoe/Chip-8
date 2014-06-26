@@ -63,43 +63,43 @@ class CPU(object):
             self.memory[i] = fonts[i]
 
         self.op_map = {0x0000: self._0ZZZ,
-                       0x00e0: self._0ZZ0,
-                       0x00ee: self._0ZZE,
-                       0x1000: self._1ZZZ,
-                       0x2000: self._2ZZZ,
-                       0x3000: self._3ZZZ,
-                       0x4000: self._4ZZZ,
-                       0x5000: self._5ZZZ,
-                       0x6000: self._6ZZZ,
-                       0x7000: self._7ZZZ,
+                       0x00e0: self._00E0,
+                       0x00ee: self._00EE,
+                       0x1000: self._1NNN,
+                       0x2000: self._2NNN,
+                       0x3000: self._3XNN,
+                       0x4000: self._4XNN,
+                       0x5000: self._5XY0,
+                       0x6000: self._6XNN,
+                       0x7000: self._7XNN,
                        0x8000: self._8ZZZ,
-                       0x8FF0: self._8ZZ0,
-                       0x8FF1: self._8ZZ1,
-                       0x8FF2: self._8ZZ2,
-                       0x8FF3: self._8ZZ3,
-                       0x8FF4: self._8ZZ4,
-                       0x8FF5: self._8ZZ5,
-                       0x8FF6: self._8ZZ6,
-                       0x8FF7: self._8ZZ7,
-                       0x8FFE: self._8ZZE,
-                       0x9000: self._9ZZZ,
-                       0xA000: self.set_index,
-                       0xB000: self.jump_addr_plus_V0,
-                       0xC000: self.set_VX_nn_and_rand,
-                       0xD000: self.draw_sprite,
-                       0xE000: self.e_filter,
-                       0xE00E: self.skip_if_key_pressed,
-                       0xE001: self.skip_if_key_not_pressed,
-                       0xF000: self.f_filter,
-                       0xF007: self.set_VX_to_delay_timer,
-                       0xF00A: self.key_input,
-                       0xF015: self.set_delay_timer,
-                       0xF018: self.set_sound_timer,
-                       0xF01E: self.add_VX_to_input,
-                       0xF029: self._FZ29,
-                       0xF033: self._FZ33,
-                       0xF055: self._FZ55,
-                       0xF065: self._FZ65}
+                       0x8FF0: self._8XY0,
+                       0x8FF1: self._8XY1,
+                       0x8FF2: self._8XY2,
+                       0x8FF3: self._8XY3,
+                       0x8FF4: self._8XY4,
+                       0x8FF5: self._8XY5,
+                       0x8FF6: self._8XY6,
+                       0x8FF7: self._8XY7,
+                       0x8FFE: self._8XYE,
+                       0x9000: self._9XY0,
+                       0xA000: self._ANNN,
+                       0xB000: self._BNNN,
+                       0xC000: self._CXNN,
+                       0xD000: self._DXYN,
+                       0xE000: self._EZZZ,
+                       0xE00E: self._EX9E,
+                       0xE001: self._EXA1,
+                       0xF000: self._FZZZ,
+                       0xF007: self._FX07,
+                       0xF00A: self._FX0A,
+                       0xF015: self._FX15,
+                       0xF018: self._FX18,
+                       0xF01E: self._FX1E,
+                       0xF029: self._FX29,
+                       0xF033: self._FX33,
+                       0xF055: self._FX55,
+                       0xF065: self._FX65}
 
     def load_rom(self, rom_path):
         rom = open(rom_path, "rb").read()
@@ -146,44 +146,44 @@ class CPU(object):
         # passes off to other opcode calls
         self.op_filter(self.opcode & 0xf0ff)
 
-    def _0ZZ0(self):
+    def _00E0(self):
         # Clears the screen
         self.console = [0] * 64 * 32
         console.fill(BLACK)
 
-    def _0ZZE(self):
+    def _00EE(self):
         # Returns from subroutine
         self.pc = self.stack.pop()
 
-    def _1ZZZ(self):
+    def _1NNN(self):
         # Jumps to address NNN
         self.pc = self.opcode & 0x0fff
 
-    def _2ZZZ(self):
+    def _2NNN(self):
         # Calls subroutine at NNN
         self.stack.append(self.pc)
         self.pc = self.opcode & 0x0fff
 
-    def _3ZZZ(self):
+    def _3XNN(self):
         # Skips the next instruction if VX equals NN
         if self.gpio[self.vx] == (self.opcode & 0x00ff):
             self.pc += 2
 
-    def _4ZZZ(self):
+    def _4XNN(self):
         # Skips the next instruction if VX doesn't equal NN.
         if self.gpio[self.vx] != (self.opcode & 0x00ff):
             self.pc += 2
 
-    def _5ZZZ(self):
+    def _5XY0(self):
         # Skips the next instruction if VX equals VY
         if self.gpio[self.vx] == self.gpio[self.vy]:
             self.pc += 2
 
-    def _6ZZZ(self):
+    def _6XNN(self):
         # Sets VX to NN
         self.gpio[self.vx] = (self.opcode & 0x00ff)
 
-    def _7ZZZ(self):
+    def _7XNN(self):
         # Adds NN to VX
         self.gpio[self.vx] += (self.opcode & 0x00ff)
 
@@ -193,27 +193,27 @@ class CPU(object):
         extracted_op += 0xff0
         self.op_filter(extracted_op)
 
-    def _8ZZ0(self):
+    def _8XY0(self):
         # Sets VX to the value of VY
         self.gpio[self.vx] = self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZ1(self):
+    def _8XY1(self):
         # Sets VX to (VX or VY)
         self.gpio[self.vx] |= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZ2(self):
+    def _8XY2(self):
         # Sets VX to (VX and VY)
         self.gpio[self.vx] &= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZ3(self):
+    def _8XY3(self):
         # Sets VX to (VX xor VY)
         self.gpio[self.vx] ^= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZ4(self):
+    def _8XY4(self):
         # Adds VY to VX. VF is set to 1 when there is a carry, and to 0 when there isn't.
         if self.gpio[self.vx] + self.gpio[self.vy] > 0xff:
             self.gpio[0xf] = 1
@@ -222,7 +222,7 @@ class CPU(object):
         self.gpio[self.vx] += self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZ5(self):
+    def _8XY5(self):
         # VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there isn't
         if self.gpio[self.vy] > self.gpio[self.vx]:
             self.gpio[0xf] = 0
@@ -231,12 +231,12 @@ class CPU(object):
         self.gpio[self.vx] -= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZ6(self):
+    def _8XY6(self):
         # Shifts VX right by one. VF is set to the value of the least significant bit of VX before the shift.
         self.gpio[0xf] = self.gpio[self.vx] & 0x0001
         self.gpio[self.vx] >>= 1
 
-    def _8ZZ7(self):
+    def _8XY7(self):
         # Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there isn't.
         if self.gpio[self.vx] > self.gpio[self.vy]:
             self.gpio[0xf] = 0
@@ -245,32 +245,32 @@ class CPU(object):
         self.gpio[self.vx] = self.gpio[self.vy] - self.gpio[self.vx]
         self.gpio[self.vx] &= 0xff
 
-    def _8ZZE(self):
+    def _8XYE(self):
         # Shifts VX left by one. VF is set to the value of the most significant bit of VX before the shift.
         self.gpio[0xf] = (self.gpio[self.vx] & 0x00f0) >> 7
         self.gpio[self.vx] <<= 1
         self.gpio[self.vx] &= 0xff
 
-    def _9ZZZ(self):
+    def _9XY0(self):
         # Skips the next instruction if VX doesn't equal VY
         if self.gpio[self.vx] != self.gpio[self.vy]:
             self.pc += 2
 
-    def set_index(self):
+    def _ANNN(self):
         # Sets I to the address NNN
         self.index = self.opcode & 0x0fff
 
-    def jump_addr_plus_V0(self):
+    def _BNNN(self):
         # Jumps to the address NNN plus V0
         self.pc = (self.opcode & 0x0fff) + self.gpio[0]
 
-    def set_VX_nn_and_rand(self):
+    def _CXNN(self):
         # Sets VX to a random number and NN
         random_number = int(random.random())
         self.gpio[self.vx] = random_number & (self.opcode & 0x00ff)
         self.gpio[self.vx] &= 0xff
 
-    def draw_sprite(self):
+    def _DXYN(self):
         # Draw a sprite
         self.gpio[0xf] = 0
         x = self.gpio[self.vx] & 0xff
@@ -299,29 +299,29 @@ class CPU(object):
             row += 1
         pygame.display.update()
 
-    def e_filter(self):
+    def _EZZZ(self):
         self.op_filter(self.opcode & 0xf00f)
 
-    def skip_if_key_pressed(self):
+    def _EX9E(self):
         # Skips the next instruction if the key stored in VX is pressed
         key = self.gpio[self.vx] & 0xf
         if self.key_inputs[key] == 1:
             self.pc += 2
 
-    def skip_if_key_not_pressed(self):
+    def _EXA1(self):
         # Skips the next instruction if the key stored in VX isn't pressed
         key = self.gpio[self.vx] & 0xf
         if self.key_inputs[key] == 0:
             self.pc += 2
 
-    def f_filter(self):
+    def _FZZZ(self):
         self.op_filter(self.opcode & 0xf0ff)
 
-    def set_VX_to_delay_timer(self):
+    def _FX07(self):
         # Sets VX to the value of the delay timer
         self.gpio[self.vx] = self.delay_timer
 
-    def key_input(self):
+    def _FX0A(self):
         # A key press is awaited, and then stored in VX
         ret = self.get_key()
         if ret >= 0:
@@ -329,15 +329,15 @@ class CPU(object):
         else:
             self.pc -= 2
 
-    def set_delay_timer(self):
+    def _FX15(self):
         # Sets the delay timer to VX
         self.delay_timer = self.gpio[self.vx]
 
-    def set_sound_timer(self):
+    def _FX18(self):
         # Sets the sound timer to VX
         self.sound_timer = self.gpio[self.vx]
 
-    def add_VX_to_input(self):
+    def _FX1E(self):
         # Adds VX to I. If overflow, VF = 1
         self.index += self.gpio[self.vx]
         if self.index > 0xfff:
@@ -346,23 +346,23 @@ class CPU(object):
         else:
             self.gpio[0xf] = 0
 
-    def _FZ29(self):
+    def _FX29(self):
         # Set index to point to a character
         self.index = (5 * (self.gpio[self.vx])) & 0xfff
 
-    def _FZ33(self):
+    def _FX33(self):
         # Store a number as BCD
         self.memory[self.index] = self.gpio[self.vx] / 100
         self.memory[self.index + 1] = (self.gpio[self.vx] % 100) / 10
         self.memory[self.index + 2] = self.gpio[self.vx] % 10
 
-    def _FZ55(self):
+    def _FX55(self):
         # Stores V0 to VX in memory starting at address I
         for index in range(0, self.vx):
             self.memory[self.index + index] = self.gpio[index]
         self.index += self.vx + 1
 
-    def _FZ65(self):
+    def _FX65(self):
         # Fills V0 to VX with values from memory starting at address I
         for index in range(0, self.vx):
             self.gpio[index] = self.memory[self.index + index]
