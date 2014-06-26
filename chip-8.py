@@ -152,7 +152,7 @@ class CPU(object):
         console.fill(BLACK)
 
     def _00EE(self):
-        # Returns from subroutine
+        # Returns from a subroutine
         self.pc = self.stack.pop()
 
     def _1NNN(self):
@@ -189,9 +189,7 @@ class CPU(object):
 
     def _8ZZZ(self):
         # Sets VX to the value of VY
-        extracted_op = self.opcode & 0xf00f
-        extracted_op += 0xff0
-        self.op_filter(extracted_op)
+        self.op_filter((self.opcode & 0xf00f) + 0xff0)
 
     def _8XY0(self):
         # Sets VX to the value of VY
@@ -199,17 +197,17 @@ class CPU(object):
         self.gpio[self.vx] &= 0xff
 
     def _8XY1(self):
-        # Sets VX to (VX or VY)
+        # Sets VX to (VX | VY)
         self.gpio[self.vx] |= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
     def _8XY2(self):
-        # Sets VX to (VX and VY)
+        # Sets VX to (VX & VY)
         self.gpio[self.vx] &= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
     def _8XY3(self):
-        # Sets VX to (VX xor VY)
+        # Sets VX to (VX ^ VY)
         self.gpio[self.vx] ^= self.gpio[self.vy]
         self.gpio[self.vx] &= 0xff
 
@@ -271,7 +269,9 @@ class CPU(object):
         self.gpio[self.vx] &= 0xff
 
     def _DXYN(self):
-        # Draw a sprite
+        # Sprites stored in memory at location in index register (I), maximum 8bits wide. Wraps around the screen.
+        # If when drawn, clears a pixel, register VF is set to 1 otherwise it is zero. All drawing is XOR drawing
+        # (e.g. it toggles the screen pixels)
         self.gpio[0xf] = 0
         x = self.gpio[self.vx] & 0xff
         y = self.gpio[self.vy] & 0xff
@@ -347,7 +347,8 @@ class CPU(object):
             self.gpio[0xf] = 0
 
     def _FX29(self):
-        # Set index to point to a character
+        # Sets I to the location of the sprite for the character in VX. Characters 0-F (in hexadecimal) are represented
+        # by a 4x5 font.
         self.index = (5 * (self.gpio[self.vx])) & 0xfff
 
     def _FX33(self):
