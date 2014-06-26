@@ -76,7 +76,7 @@ class Disassembler(object):
         return 'JUMP\t$%s(V0)' % str(hex(self.opcode & 0x0fff))[2:]
 
     def _CXNN(self):
-        return 
+        return
 
     def _DNNN(self):
         vx = str(hex(self.opcode & 0xf00))[2]
