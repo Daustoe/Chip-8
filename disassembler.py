@@ -191,5 +191,5 @@ class Disassembler(object):
         return 'MOVM\t\tV0-V%s,\t(I)' % self.extract(0xf00)[2]
 
 if __name__ == '__main__':
-    dsm = Disassembler('games/CONNECT4')
+    dsm = Disassembler('utils/games/Pong.ch8')
     dsm.disassemble_all()

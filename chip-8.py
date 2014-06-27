@@ -2,6 +2,20 @@ __author__ = 'Clayton Powell'
 import pygame
 import sys
 import random
+import pyglet
+
+"""
+Notes:
+
+Want to move to pyglet instead of pygame for the flexibility that it provides.
+Want to create an entire debugger for the Chip-8 emulator. This will be nice to have
+when we move to upgrading to Super Chip-8.
+
+This includes a view of the registers, a disassembler of the opcodes run, emulation flow
+control, and a view of the memory.
+
+
+"""
 
 
 BLACK = (0, 0, 0)
@@ -372,16 +386,16 @@ class CPU(object):
 
 if __name__ == '__main__':
     pygame.init()
-    console = pygame.display.set_mode((640, 320))
+    console = pygame.display.set_mode((840, 520))
     white_pixel = pygame.Surface(pixel_size)
     white_pixel.fill(WHITE)
     black_pixel = pygame.Surface(pixel_size)
     black_pixel.fill(BLACK)
     emulator = CPU()
-    emulator.load_rom('games/TICTAC')
+    emulator.load_rom('utils/games/Pong.ch8')
     clock = pygame.time.Clock()
     while True:
-        clock.tick(100)
+        clock.tick(1000)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
