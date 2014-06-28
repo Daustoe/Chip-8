@@ -1,5 +1,5 @@
 __author__ = 'cjpowell'
-import pygame
+import disassembler
 import random
 
 fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
@@ -36,6 +36,7 @@ class CPU(object):
         self.pc = 0x200
         self.vx = 0
         self.vy = 0
+        self.disassembler = disassembler.Disassembler()
 
         for i in range(0, 80):
             self.memory[i] = fonts[i]
@@ -91,8 +92,9 @@ class CPU(object):
         except KeyError:
             print "Unknown instruction: %X" % self.opcode
 
-    def cycle(self):
+    def cycle(self, dt):
         self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
+        print self.disassembler.disassemble(self.pc, self.opcode)
         self.pc += 2
         self.vx = (self.opcode & 0x0f00) >> 8
         self.vy = (self.opcode & 0x00f0) >> 4
@@ -111,15 +113,6 @@ class CPU(object):
                 return index
         return -1
 
-    def draw(self):
-        if self.should_draw:
-            #console.fill(BLACK)
-            #for index in range(2048):
-             #   if self.console[index] == 1:
-              #      console.blit(pixel, ((index % 64) * 10, 310 - ((index / 64) * 10)))
-            pygame.display.update()
-            self.should_draw = False
-
     def _0ZZZ(self):
         # passes off to other opcode calls
         self.op_filter(self.opcode & 0xf0ff)
@@ -127,6 +120,7 @@ class CPU(object):
     def _00E0(self):
         # Clears the screen
         self.graphics = [0] * 64 * 32
+        self.should_draw = True
 
     def _00EE(self):
         # Returns from a subroutine
@@ -249,7 +243,7 @@ class CPU(object):
         # Sprites stored in memory at location in index register (I), maximum 8bits wide. Wraps around the screen.
         # If when drawn, clears a pixel, register VF is set to 1 otherwise it is zero. All drawing is XOR drawing
         # (e.g. it toggles the screen pixels)
-        self.gpio[0xf] = 0
+        '''self.gpio[0xf] = 0
         x = self.gpio[self.vx] & 0xff
         y = self.gpio[self.vy] & 0xff
         height = self.opcode & 0x000f
@@ -268,6 +262,29 @@ class CPU(object):
                 if self.graphics[location == 1 and current_pixel == 1]:
                     self.gpio[0xf] = 1
                 self.graphics[location] ^= current_pixel
+            row += 1
+        self.should_draw = True'''
+        self.gpio[0xf] = 0
+        x = self.gpio[self.vx] & 0xff
+        y = self.gpio[self.vy] & 0xff
+        height = self.opcode & 0x000f
+        row = 0
+        while row < height:
+            curr_row = self.memory[row + self.index]
+            pixel_offset = 0
+            while pixel_offset < 8:
+                loc = x + pixel_offset + ((y + row) * 64)
+                pixel_offset += 1
+                if (y + row) >= 32 or (x + pixel_offset - 1) >= 64:
+                    # ignore pixels outside the screen
+                    continue
+                mask = 1 << 8-pixel_offset
+                curr_pixel = (curr_row & mask) >> (8-pixel_offset)
+                self.graphics[loc] ^= curr_pixel
+                if self.graphics[loc] == 0:
+                    self.gpio[0xf] = 1
+                else:
+                    self.gpio[0xf] = 0
             row += 1
         self.should_draw = True
 

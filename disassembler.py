@@ -2,9 +2,8 @@ __author__ = 'Claymore'
 
 
 class Disassembler(object):
-    def __init__(self, rom_path):
+    def __init__(self):
         self.memory = [0] * 4096
-        self.load_rom(rom_path)
         self.opcode = 0x0
         self.op_map = {0x0000: self._0ZZZ,
                        0x00e0: self._00E0,
@@ -52,18 +51,19 @@ class Disassembler(object):
             self.memory[index + 0x200] = ord(rom[index])
 
     def disassemble(self, pc, opcode):
+        self.opcode = opcode
         if opcode == 0:
-            print '%s %s\t\tNOP' % (hex(pc), str(hex(opcode))[2:])
+            return '%s %s\t\tNOP' % (hex(pc), str(hex(opcode))[2:])
         else:
             try:
-                print '%s %s\t%s' % (hex(pc), str(hex(opcode))[2:], self.op_map[opcode & 0xf000]())
+                return '%s %s\t%s' % (hex(pc), str(hex(opcode))[2:], self.op_map[opcode & 0xf000]())
             except KeyError:
-                print '%s %s\t%s' % (hex(pc), str(hex(opcode))[2:], '\tNot Handled')
+                return '%s %s\t%s' % (hex(pc), str(hex(opcode))[2:], '\tNot Handled')
 
     def disassemble_all(self):
         for index in range(0x200, len(self.memory), 2):
             self.opcode = (self.memory[index] << 8) | self.memory[index+1]
-            self.disassemble(index, self.opcode)
+            print self.disassemble(index, self.opcode)
 
     def extract(self, mask):
         return str(hex(self.opcode & mask))
@@ -161,6 +161,7 @@ class Disassembler(object):
         return 'SKIP.NOKEY\tV%s' % self.extract(0xf00)[2]
 
     def _FZZZ(self):
+        print self.opcode
         return self.op_map[self.opcode & 0xf0ff]()
 
     def _FX07(self):

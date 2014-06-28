@@ -1,77 +1,58 @@
 __author__ = 'Clayton Powell'
-import pygame
-import sys
 import pyglet
 import cpu
-
 """
 Notes:
-
-Want to move to pyglet instead of pygame for the flexibility that it provides.
 Want to create an entire debugger for the Chip-8 emulator. This will be nice to have
 when we move to upgrading to Super Chip-8.
 
 This includes a view of the registers, a disassembler of the opcodes run, emulation flow
 control, and a view of the memory.
-
-
 """
 
 
-class Chip8(object):
-    def __init__(self):
-        self.key_map = {pygame.K_1: 0x1,
-                        pygame.K_2: 0x2,
-                        pygame.K_3: 0x3,
-                        pygame.K_4: 0xc,
-                        pygame.K_q: 0x4,
-                        pygame.K_w: 0x5,
-                        pygame.K_e: 0x6,
-                        pygame.K_r: 0xd,
-                        pygame.K_a: 0x7,
-                        pygame.K_s: 0x8,
-                        pygame.K_d: 0x9,
-                        pygame.K_f: 0xe,
-                        pygame.K_z: 0xa,
-                        pygame.K_x: 0,
-                        pygame.K_c: 0xb,
-                        pygame.K_v: 0xf}
-        self.console = pygame.display.set_mode((640, 320))
-        self.debug_window = pyglet.window.Window(800, 600)
-        self.clock = pygame.time.Clock()
-        self.white_pixel = pygame.Surface((10, 10))
-        self.white_pixel.fill((255, 255, 255))
-        self.black_pixel = pygame.Surface((10, 10))
-        self.black_pixel.fill((0, 0, 0))
+class Chip8(pyglet.window.Window):
+    def __init__(self, *args, **kwargs):
+        super(Chip8, self).__init__(*args, **kwargs)
+        self.key_map = {pyglet.window.key._1: 0x1,
+                        pyglet.window.key._2: 0x2,
+                        pyglet.window.key._3: 0x3,
+                        pyglet.window.key._4: 0xc,
+                        pyglet.window.key.Q: 0x4,
+                        pyglet.window.key.W: 0x5,
+                        pyglet.window.key.E: 0x6,
+                        pyglet.window.key.R: 0xd,
+                        pyglet.window.key.A: 0x7,
+                        pyglet.window.key.S: 0x8,
+                        pyglet.window.key.D: 0x9,
+                        pyglet.window.key.F: 0xe,
+                        pyglet.window.key.Z: 0xa,
+                        pyglet.window.key.X: 0,
+                        pyglet.window.key.C: 0xb,
+                        pyglet.window.key.V: 0xf}
+        self.pixel = pyglet.image.load('pixel.png')
         self.cpu = cpu.CPU()
-        self.cpu.load_rom('utils/games/Tron.ch8')
+        self.cpu.load_rom('utils/games/Pong.ch8')
+        self.clear()
 
-    def emulator_loop(self):
-        while True:
-            self.clock.tick(1000)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key in self.key_map:
-                        self.cpu.key_inputs[self.key_map[event.key]] = 1
-                elif event.type == pygame.KEYUP:
-                    if event.key in self.key_map:
-                        self.cpu.key_inputs[self.key_map[event.key]] = 0
-            self.cpu.cycle()
-            self.draw()
+    def on_key_press(self, symbol, modifiers):
+        if symbol in self.key_map.keys():
+            self.cpu.key_inputs[self.key_map[symbol]] = 1
 
-    def draw(self):
+    def on_key_release(self, symbol, modifiers):
+        if symbol in self.key_map.keys():
+            self.cpu.key_inputs[self.key_map[symbol]] = 0
+
+    def on_draw(self):
         if self.cpu.should_draw:
-            self.console.fill((0, 0, 0))
-            for index in range(2048):
-                if self.cpu.graphics[index] == 1:
-                    self.console.blit(self.white_pixel, ((index % 64) * 10, ((index / 64) * 10)))
-            pygame.display.update()
+            self.clear()
+            for i in range(2048):
+                if self.cpu.graphics[i] == 1:
+                    self.pixel.blit((i % 64) * 10, 310 - ((i / 64) * 10))
             self.cpu.should_draw = False
 
-if __name__ == '__main__':
-    pygame.init()
-    emulator = Chip8()
-    emulator.emulator_loop()
 
+if __name__ == '__main__':
+    emulator = Chip8(640, 320)
+    pyglet.clock.schedule_interval(emulator.cpu.cycle, 1/100.0)
+    pyglet.app.run()
