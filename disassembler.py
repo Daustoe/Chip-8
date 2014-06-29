@@ -1,4 +1,7 @@
-__author__ = 'Claymore'
+"""
+This module contains the Disassembler class for the Chip-8 interpreter.
+"""
+__author__ = 'Clayton Powell'
 
 
 class Disassembler(object):
@@ -7,7 +10,6 @@ class Disassembler(object):
     """
 
     def __init__(self):
-        self.memory = [0] * 4096
         self.opcode = 0x0
         self.op_map = {0x0000: self._0zzz,
                        0x00e0: self._00e0,
@@ -17,46 +19,37 @@ class Disassembler(object):
                        0x3000: self._3xnn,
                        0x4000: self._4xnn,
                        0x5000: self._5xy0,
-                       0x6000: self._6XNN,
-                       0x7000: self._7XNN,
-                       0x8000: self._8ZZZ,
-                       0x8ff0: self._8XY0,
-                       0x8ff1: self._8XY1,
-                       0x8ff2: self._8XY2,
-                       0x8ff3: self._8XY3,
-                       0x8ff4: self._8XY4,
-                       0x8ff5: self._8XY5,
-                       0x8ff6: self._8XY6,
-                       0x8ff7: self._8XY7,
-                       0x8ffe: self._8XYE,
-                       0x9000: self._9XY0,
-                       0xa000: self._ANNN,
-                       0xb000: self._BNNN,
-                       0xc000: self._CXNN,
-                       0xd000: self._DNNN,
-                       0xe000: self._EZZZ,
-                       0xe00e: self._EX9E,
-                       0xe001: self._EXA1,
-                       0xf000: self._FZZZ,
-                       0xf007: self._FX07,
-                       0xf00a: self._FX0A,
-                       0xf015: self._FX15,
-                       0xf018: self._FX18,
-                       0xf01e: self._FX1E,
-                       0xf029: self._FX29,
-                       0xf033: self._FX33,
-                       0xf055: self._FX55,
-                       0xf065: self._FX65
+                       0x6000: self._6xnn,
+                       0x7000: self._7xnn,
+                       0x8000: self._8zzz,
+                       0x8ff0: self._8xy0,
+                       0x8ff1: self._8xy1,
+                       0x8ff2: self._8xy2,
+                       0x8ff3: self._8xy3,
+                       0x8ff4: self._8xy4,
+                       0x8ff5: self._8xy5,
+                       0x8ff6: self._8xy6,
+                       0x8ff7: self._8xy7,
+                       0x8ffe: self._8xye,
+                       0x9000: self._9xy0,
+                       0xa000: self._annn,
+                       0xb000: self._bnnn,
+                       0xc000: self._cxnn,
+                       0xd000: self._dnnn,
+                       0xe000: self._ezzz,
+                       0xe00e: self._ex9e,
+                       0xe001: self._exa1,
+                       0xf000: self._fzzz,
+                       0xf007: self._fx07,
+                       0xf00a: self._fx0a,
+                       0xf015: self._fx15,
+                       0xf018: self._fx18,
+                       0xf01e: self._fx1e,
+                       0xf029: self._fx29,
+                       0xf033: self._fx33,
+                       0xf055: self._fx55,
+                       0xf065: self._fx65
                        }
-
-    def load_rom(self, rom_path):
-        """
-        Loads Chip8 rom from given path into local memory.
-        :param rom_path:
-        """
-        rom = open(rom_path, "rb").read()
-        for index in range(0, len(rom)):
-            self.memory[index + 0x200] = ord(rom[index])
 
     def disassemble(self, pc, opcode):
         """
@@ -75,14 +68,6 @@ class Disassembler(object):
                 return '%s %s\t%s' % (hex(pc), str(hex(opcode))[2:], function())
             except KeyError:
                 return '%s %s\t%s' % (hex(pc), str(hex(opcode))[2:], '\tNot Handled')
-
-    def disassemble_all(self):
-        """
-        Disassembles the entire rom of a given Chip8 rom.
-        """
-        for index in range(0x200, len(self.memory), 2):
-            self.opcode = (self.memory[index] << 8) | self.memory[index+1]
-            print self.disassemble(index, self.opcode)
 
     def _extract(self, mask):
         return str(hex(self.opcode & mask))
@@ -120,97 +105,97 @@ class Disassembler(object):
     def _5xy0(self):
         return 'SKIP.EQ\t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _6XNN(self):
+    def _6xnn(self):
         return 'MVI \t\tV%s, \t$%s' % self._extract_vx_nn()
 
-    def _7XNN(self):
+    def _7xnn(self):
         return 'ADI \t\tV%s, \t$%s' % self._extract_vx_nn()
 
-    def _8ZZZ(self):
+    def _8zzz(self):
         function = self.op_map[(self.opcode & 0xf00f) + 0xff0]
         return function()
 
-    def _8XY0(self):
+    def _8xy0(self):
         return 'MOV \t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XY1(self):
+    def _8xy1(self):
         return 'OR  \t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XY2(self):
+    def _8xy2(self):
         return 'AND \t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XY3(self):
+    def _8xy3(self):
         return 'XOR \t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XY4(self):
+    def _8xy4(self):
         return 'ADD.\t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XY5(self):
+    def _8xy5(self):
         return 'SUB.\t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XY6(self):
+    def _8xy6(self):
         return 'SHR.\t\tV%s' % self._extract(0xf00)[2]
 
-    def _8XY7(self):
+    def _8xy7(self):
         return 'SBB.\t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _8XYE(self):
+    def _8xye(self):
         return 'SHL.\t\tV%s' % self._extract(0xf00)[2]
 
-    def _9XY0(self):
+    def _9xy0(self):
         return 'SKIP.NE\t\tV%s, \tV%s' % self._extract_vx_vy()
 
-    def _ANNN(self):
+    def _annn(self):
         return 'MVI \t\tI,\t\t$%s' % self._extract(0xfff)[2:]
 
-    def _BNNN(self):
+    def _bnnn(self):
         return 'JUMP\t\t$%s(V0)' % self._extract(0xfff)[2:]
 
-    def _CXNN(self):
+    def _cxnn(self):
         return 'RAND\t\tV%s, \t$%s' % self._extract_vx_nn()
 
-    def _DNNN(self):
+    def _dnnn(self):
         vx, vy = self._extract_vx_vy()
         height = self._extract(0xf)[2]
         return 'DRAW\t\tVX:%s\tVY:%s\tH:%s' % (vx, vy, height)
 
-    def _EZZZ(self):
+    def _ezzz(self):
         function = self.op_map[self.opcode & 0xf00f]
         return function()
 
-    def _EX9E(self):
+    def _ex9e(self):
         return 'SKIP.KEY\tV%s' % self._extract(0xf00)[2]
 
-    def _EXA1(self):
+    def _exa1(self):
         return 'SKIP.NOKEY\tV%s' % self._extract(0xf00)[2]
 
-    def _FZZZ(self):
+    def _fzzz(self):
         function = self.op_map[self.opcode & 0xf0ff]
         return function()
 
-    def _FX07(self):
+    def _fx07(self):
         return 'MOV \t\tV%s, \tDELAY' % self._extract(0xf00)[2]
 
-    def _FX0A(self):
+    def _fx0a(self):
         return 'WAITKEY\t\tV%s' % self._extract(0xf00)[2]
 
-    def _FX15(self):
+    def _fx15(self):
         return 'MOV \t\tDELAY, \tV%s' % self._extract(0xf00)[2]
 
-    def _FX18(self):
+    def _fx18(self):
         return 'MOV \t\tSOUND, \tV%s' % self._extract(0xf00)[2]
 
-    def _FX1E(self):
+    def _fx1e(self):
         return 'ADD \t\tI,\t\tV%s' % self._extract(0xf00)[2]
 
-    def _FX29(self):
+    def _fx29(self):
         return 'SPRITE\t\tV%s' % self._extract(0xf00)[2]
 
-    def _FX33(self):
+    def _fx33(self):
         return 'MOVBCD\t\tV%s' % self._extract(0xf00)[2]
 
-    def _FX55(self):
+    def _fx55(self):
         return 'MOVM\t\t(I), \tV0-V%s' % self._extract(0xf00)[2]
 
-    def _FX65(self):
+    def _fx65(self):
         return 'MOVM\t\tV0-V%s,\t(I)' % self._extract(0xf00)[2]

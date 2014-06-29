@@ -1,4 +1,7 @@
-__author__ = 'cjpowell'
+"""
+Chip 8 CPU module.
+"""
+__author__ = 'Clayton Powell'
 import disassembler
 import random
 
@@ -20,8 +23,10 @@ fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
          0xF0, 0x80, 0xF0, 0x80, 0x80]  # F
 
 
-# noinspection PyPep8Naming
 class CPU(object):
+    """
+    CPU class that emulates the Chip 8 cpu for the entire program.
+    """
     def __init__(self):
         self.memory = [0] * 4096  # 4096 bits
         self.gpio = [0] * 16  # max 16
@@ -81,24 +86,33 @@ class CPU(object):
                        0xF065: self._FX65}
 
     def load_rom(self, rom_path):
+        """
+        Loads the rom at the given rom_path into local memory. Starts the loaded rom at offset 0x200. This is the
+        standard for Chip 8 interpreters as anything before 0x200 was typically reserved.
+        :param rom_path:
+        """
         rom = open(rom_path, "rb").read()
         for index in range(0, len(rom)):
             self.memory[index + 0x200] = ord(rom[index])
 
-    def op_filter(self, opcode):
+    def _op_filter(self, opcode):
         try:
-            # noinspection PyCallingNonCallable
-            self.op_map[opcode]()
+            function = self.op_map[opcode]
+            function()
         except KeyError:
             print "Unknown instruction: %X" % self.opcode
 
     def cycle(self, dt):
+        """
+        Performs one cpu cycle. 
+        :param dt:
+        """
         self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         print self.disassembler.disassemble(self.pc, self.opcode)
         self.pc += 2
         self.vx = (self.opcode & 0x0f00) >> 8
         self.vy = (self.opcode & 0x00f0) >> 4
-        self.op_filter(self.opcode & 0xf000)
+        self._op_filter(self.opcode & 0xf000)
         if self.delay_timer > 0:
             self.delay_timer -= 1
         if self.sound_timer > 0:
@@ -115,7 +129,7 @@ class CPU(object):
 
     def _0ZZZ(self):
         # passes off to other opcode calls
-        self.op_filter(self.opcode & 0xf0ff)
+        self._op_filter(self.opcode & 0xf0ff)
 
     def _00E0(self):
         # Clears the screen
@@ -160,7 +174,7 @@ class CPU(object):
 
     def _8ZZZ(self):
         # Sets VX to the value of VY
-        self.op_filter((self.opcode & 0xf00f) + 0xff0)
+        self._op_filter((self.opcode & 0xf00f) + 0xff0)
 
     def _8XY0(self):
         # Sets VX to the value of VY
@@ -289,7 +303,7 @@ class CPU(object):
         self.should_draw = True
 
     def _EZZZ(self):
-        self.op_filter(self.opcode & 0xf00f)
+        self._op_filter(self.opcode & 0xf00f)
 
     def _EX9E(self):
         # Skips the next instruction if the key stored in VX is pressed
@@ -304,7 +318,7 @@ class CPU(object):
             self.pc += 2
 
     def _FZZZ(self):
-        self.op_filter(self.opcode & 0xf0ff)
+        self._op_filter(self.opcode & 0xf0ff)
 
     def _FX07(self):
         # Sets VX to the value of the delay timer
