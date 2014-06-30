@@ -1,15 +1,10 @@
 """
 Notes:
-Want to create an entire debugger for the Chip-8 emulator. This will be nice to have
-when we move to upgrading to Super Chip-8.
-
-This includes a view of the registers, a disassembler of the opcodes run, emulation flow
-control, and a view of the memory.
+May want to look into PySide or PyQT in order to get a better gui system for our debugger.
 """
 __author__ = 'Clayton Powell'
 import pyglet
 import cpu
-import disassembler
 import debugger
 
 
@@ -75,6 +70,10 @@ class Chip8(pyglet.window.Window):
 
 
 def update(dt):
+    """
+    Update method for both debugger and the cpu.
+    :param dt:
+    """
     emulator.cpu.cycle()
     dbg.update_disassembly(emulator.cpu.pc, emulator.cpu.opcode)
 
