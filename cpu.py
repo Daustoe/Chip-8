@@ -46,17 +46,17 @@ class CPU(object):
         for i in range(0, 80):
             self.memory[i] = fonts[i]
 
-        self.op_map = {0x0000: self._0ZZZ,
-                       0x00e0: self._00E0,
-                       0x00ee: self._00EE,
-                       0x1000: self._1NNN,
-                       0x2000: self._2NNN,
-                       0x3000: self._3XNN,
-                       0x4000: self._4XNN,
-                       0x5000: self._5XY0,
-                       0x6000: self._6XNN,
-                       0x7000: self._7XNN,
-                       0x8000: self._8ZZZ,
+        self.op_map = {0x0000: self._0zzz,
+                       0x00e0: self._00e0,
+                       0x00ee: self._00ee,
+                       0x1000: self._1nnn,
+                       0x2000: self._2nnn,
+                       0x3000: self._3xnn,
+                       0x4000: self._4xnn,
+                       0x5000: self._5xy0,
+                       0x6000: self._6xnn,
+                       0x7000: self._7xnn,
+                       0x8000: self._8zzz,
                        0x8FF0: self._8XY0,
                        0x8FF1: self._8XY1,
                        0x8FF2: self._8XY2,
@@ -104,7 +104,7 @@ class CPU(object):
 
     def cycle(self, dt):
         """
-        Performs one cpu cycle. 
+        Performs one cpu cycle.
         :param dt:
         """
         self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
@@ -121,58 +121,58 @@ class CPU(object):
                 # Play a sound!
                 pass
 
-    def get_key(self):
+    def _get_key(self):
         for index in range(16):
             if self.key_inputs[index] == 1:
                 return index
         return -1
 
-    def _0ZZZ(self):
+    def _0zzz(self):
         # passes off to other opcode calls
         self._op_filter(self.opcode & 0xf0ff)
 
-    def _00E0(self):
+    def _00e0(self):
         # Clears the screen
         self.graphics = [0] * 64 * 32
         self.should_draw = True
 
-    def _00EE(self):
+    def _00ee(self):
         # Returns from a subroutine
         self.pc = self.stack.pop()
 
-    def _1NNN(self):
+    def _1nnn(self):
         # Jumps to address NNN
         self.pc = self.opcode & 0x0fff
 
-    def _2NNN(self):
+    def _2nnn(self):
         # Calls subroutine at NNN
         self.stack.append(self.pc)
         self.pc = self.opcode & 0x0fff
 
-    def _3XNN(self):
+    def _3xnn(self):
         # Skips the next instruction if VX equals NN
         if self.gpio[self.vx] == (self.opcode & 0x00ff):
             self.pc += 2
 
-    def _4XNN(self):
+    def _4xnn(self):
         # Skips the next instruction if VX doesn't equal NN.
         if self.gpio[self.vx] != (self.opcode & 0x00ff):
             self.pc += 2
 
-    def _5XY0(self):
+    def _5xy0(self):
         # Skips the next instruction if VX equals VY
         if self.gpio[self.vx] == self.gpio[self.vy]:
             self.pc += 2
 
-    def _6XNN(self):
+    def _6xnn(self):
         # Sets VX to NN
         self.gpio[self.vx] = (self.opcode & 0x00ff)
 
-    def _7XNN(self):
+    def _7xnn(self):
         # Adds NN to VX
         self.gpio[self.vx] += (self.opcode & 0x00ff)
 
-    def _8ZZZ(self):
+    def _8zzz(self):
         # Sets VX to the value of VY
         self._op_filter((self.opcode & 0xf00f) + 0xff0)
 
@@ -326,7 +326,7 @@ class CPU(object):
 
     def _FX0A(self):
         # A key press is awaited, and then stored in VX
-        ret = self.get_key()
+        ret = self._get_key()
         if ret >= 0:
             self.gpio[self.vx] = ret
         else:
