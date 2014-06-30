@@ -9,6 +9,8 @@ control, and a view of the memory.
 __author__ = 'Clayton Powell'
 import pyglet
 import cpu
+import disassembler
+import debugger
 
 
 class Chip8(pyglet.window.Window):
@@ -20,10 +22,10 @@ class Chip8(pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
         super(Chip8, self).__init__(*args, **kwargs)
-        self.key_map = {pyglet.window.key.NUM_1: 0x1,
-                        pyglet.window.key.NUM_2: 0x2,
-                        pyglet.window.key.NUM_3: 0x3,
-                        pyglet.window.key.NUM_4: 0xc,
+        self.key_map = {pyglet.window.key._1: 0x1,
+                        pyglet.window.key._2: 0x2,
+                        pyglet.window.key._3: 0x3,
+                        pyglet.window.key._4: 0xc,
                         pyglet.window.key.Q: 0x4,
                         pyglet.window.key.W: 0x5,
                         pyglet.window.key.E: 0x6,
@@ -50,8 +52,6 @@ class Chip8(pyglet.window.Window):
         """
         if symbol in self.key_map.keys():
             self.cpu.key_inputs[self.key_map[symbol]] = 1
-        else:
-            super(Chip8, self).on_key_press(symbol, modifiers)
 
     def on_key_release(self, symbol, modifiers):
         """
@@ -61,8 +61,6 @@ class Chip8(pyglet.window.Window):
         """
         if symbol in self.key_map.keys():
             self.cpu.key_inputs[self.key_map[symbol]] = 0
-        else:
-            super(Chip8, self).on_key_release(symbol, modifiers)
 
     def on_draw(self):
         """
@@ -76,7 +74,12 @@ class Chip8(pyglet.window.Window):
             self.cpu.should_draw = False
 
 
+def update(dt):
+    emulator.cpu.cycle()
+    dbg.update_disassembly(emulator.cpu.pc, emulator.cpu.opcode)
+
 if __name__ == '__main__':
     emulator = Chip8(640, 320)
-    pyglet.clock.schedule_interval(emulator.cpu.cycle, 1/100.0)
+    dbg = debugger.Debugger(800, 600)
+    pyglet.clock.schedule_interval(update, 1)
     pyglet.app.run()
