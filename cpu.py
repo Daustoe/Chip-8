@@ -1,5 +1,12 @@
 """
 Chip 8 CPU module.
+
+Notes:
+Currently there is a problem with how Chip 8 programs expect the interpreter to draw sprites.
+Because of this there is a blinking/flickering effect. The program clears a sprite, we draw, the program writes
+a sprite, we draw.
+
+It should be program clears a sprite, program writes a sprite, we Draw
 """
 __author__ = 'Clayton Powell'
 import random
@@ -257,6 +264,7 @@ class CPU(object):
         y = self.gpio[self.vy] & 0xff
         height = self.opcode & 0x000f
         row = 0
+        self.gpio[0xf] = 0
         while row < height:
             curr_row = self.memory[row + self.index]
             pixel_offset = 0
@@ -268,13 +276,12 @@ class CPU(object):
                     continue
                 mask = 1 << 8-pixel_offset
                 curr_pixel = (curr_row & mask) >> (8-pixel_offset)
-                self.graphics[loc] ^= curr_pixel
-                if self.graphics[loc] == 0:
+                if self.graphics[loc] == 1 and curr_pixel == 1:
                     self.gpio[0xf] = 1
-                else:
-                    self.gpio[0xf] = 0
+                self.graphics[loc] ^= curr_pixel
             row += 1
-        self.should_draw = True
+        if self.gpio[0xf] == 0:
+            self.should_draw = True
 
     def _ezzz(self):
         self._op_filter(self.opcode & 0xf00f)
