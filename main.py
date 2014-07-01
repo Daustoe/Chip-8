@@ -15,11 +15,13 @@ def update(dt):
     Update method for both debugger and the cpu.
     :param dt:
     """
-    emulator.cpu.cycle()
-    dbg.update_disassembly(emulator.cpu.pc, emulator.cpu.opcode)
+    if not emulator.cpu.is_paused:
+        emulator.cpu.cycle()
+        dbg.update_disassembly(emulator.cpu.pc, emulator.cpu.opcode)
 
 if __name__ == '__main__':
     emulator = chip8.Chip8(640, 320)
     dbg = debugger.Debugger(800, 600)
-    pyglet.clock.schedule_interval(update, 1/10.0)
+    dbg.hook(emulator)
+    pyglet.clock.schedule_interval(update, 1/60.0)
     pyglet.app.run()

@@ -47,6 +47,7 @@ class CPU(object):
         self.pc = 0x200
         self.vx = 0
         self.vy = 0
+        self.is_paused = False
         for i in range(0, 80):
             self.memory[i] = fonts[i]
 

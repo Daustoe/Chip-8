@@ -18,11 +18,16 @@ class Debugger(pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
         super(Debugger, self).__init__(*args, **kwargs)
-        self.labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=5, y=400 + i*10, anchor_x='left',
-                                         anchor_y='top') for i in range(20)]
+        self.dasm_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=5, y=400 + i * 10, anchor_x='left',
+                                              anchor_y='top') for i in range(20)]
         self.dasm = disassembler.Disassembler()
+        self.gpio_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=400 + i * 10, anchor_x='left',
+                                              anchor_y='top') for i in range(0x10)]
+        self.index_label = pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=400 + i * 10, anchor_x='left',
+                                             anchor_y='top')
         self.history = []
         self.set_vsync(False)
+        self.emulator = None
 
     def update_disassembly(self, pc, opcode):
         """
@@ -32,14 +37,23 @@ class Debugger(pyglet.window.Window):
         """
         self.history.append(self.dasm.disassemble(pc, opcode))
 
+    def hook(self, emulator):
+        """
+        Attaches the given emulator to this debugger.
+        :param emulator:
+        """
+        self.emulator = emulator
+
     def on_key_press(self, symbol, modifiers):
         """
         Key press event for the dbg. Here we enable cpu control, stop, one cycle, and such.
         :param symbol:
         :param modifiers:
         """
-        if symbol == pyglet.window.key.S:
-            print 'should stop!'
+        if symbol == pyglet.window.key.P:
+            self.emulator.cpu.is_paused = True
+        elif symbol == pyglet.window.key.G:
+            self.emulator.cpu.is_paused = False
 
     def on_draw(self):
         """
@@ -48,8 +62,8 @@ class Debugger(pyglet.window.Window):
         self.clear()
         for index in range(20):
             try:
-                self.labels[index].text = self.history[-(index + 1)]
-                self.labels[index].draw()
+                self.dasm_labels[index].text = self.history[-(index + 1)]
+                self.dasm_labels[index].draw()
             except IndexError:
                 continue
         self.flip()
