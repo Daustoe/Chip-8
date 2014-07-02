@@ -18,13 +18,12 @@ class Debugger(pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
         super(Debugger, self).__init__(*args, **kwargs)
-        self.dasm_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=5, y=400 + i * 10, anchor_x='left',
-                                              anchor_y='top') for i in range(20)]
+        self.dasm_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=5, y=40 + i * 10, anchor_x='left',
+                                              anchor_y='top') for i in range(60)]
         self.dasm = disassembler.Disassembler()
         self.gpio_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=400 + i * 10, anchor_x='left',
                                               anchor_y='top') for i in range(0x10)]
-        self.index_label = pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=400 + i * 10, anchor_x='left',
-                                             anchor_y='top')
+        self.index_label = pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=150)
         self.history = []
         self.set_vsync(False)
         self.emulator = None
@@ -54,16 +53,24 @@ class Debugger(pyglet.window.Window):
             self.emulator.cpu.is_paused = True
         elif symbol == pyglet.window.key.G:
             self.emulator.cpu.is_paused = False
+        elif symbol == pyglet.window.key.T and self.emulator.cpu.is_paused:
+            self.emulator.cpu.cycle()
+            self.update_disassembly(self.emulator.cpu.pc, self.emulator.cpu.opcode)
 
     def on_draw(self):
         """
         Draw method for the debugger window.
         """
         self.clear()
-        for index in range(20):
+        self.index_label.text = 'I: ' + hex(self.emulator.cpu.index)[2:]
+        self.index_label.draw()
+        for index in range(60):
             try:
                 self.dasm_labels[index].text = self.history[-(index + 1)]
                 self.dasm_labels[index].draw()
             except IndexError:
                 continue
+        for label in range(0x10):
+            self.gpio_labels[label].text = hex(label) + ' ' + hex(self.emulator.cpu.gpio[label])[2:]
+            self.gpio_labels[label].draw()
         self.flip()

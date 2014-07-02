@@ -17,11 +17,11 @@ def update(dt):
     """
     if not emulator.cpu.is_paused:
         emulator.cpu.cycle()
-        dbg.update_disassembly(emulator.cpu.pc, emulator.cpu.opcode)
+        dbg.update_disassembly(emulator.cpu.previous_pc, emulator.cpu.opcode)
 
 if __name__ == '__main__':
     emulator = chip8.Chip8(640, 320)
     dbg = debugger.Debugger(800, 600)
     dbg.hook(emulator)
-    pyglet.clock.schedule_interval(update, 1/60.0)
+    pyglet.clock.schedule_interval(update, 1/50.0)
     pyglet.app.run()

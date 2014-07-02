@@ -48,6 +48,7 @@ class CPU(object):
         self.vx = 0
         self.vy = 0
         self.is_paused = False
+        self.previous_pc = None
         for i in range(0, 80):
             self.memory[i] = fonts[i]
 
@@ -111,6 +112,7 @@ class CPU(object):
         """
         Performs one cpu cycle.
         """
+        self.previous_pc = self.pc
         self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         self.pc += 2
         self.vx = (self.opcode & 0x0f00) >> 8
@@ -131,7 +133,6 @@ class CPU(object):
         return -1
 
     def _0zzz(self):
-        # passes off to other opcode calls
         self._op_filter(self.opcode & 0xf0ff)
 
     def _00e0(self):
@@ -176,7 +177,6 @@ class CPU(object):
         self.gpio[self.vx] += (self.opcode & 0x00ff)
 
     def _8zzz(self):
-        # Sets VX to the value of VY
         self._op_filter((self.opcode & 0xf00f) + 0xff0)
 
     def _8xy0(self):
@@ -252,9 +252,7 @@ class CPU(object):
 
     def _cxnn(self):
         # Sets VX to a random number and NN
-        random_number = int(random.random())
-        self.gpio[self.vx] = random_number & (self.opcode & 0x00ff)
-        self.gpio[self.vx] &= 0xff
+        self.gpio[self.vx] = (random.randint(0, 0xff) & (self.opcode & 0x00ff)) & 0xff
 
     def _dxyn(self):
         # Sprites stored in memory at location in index register (I), maximum 8bits wide. Wraps around the screen.
