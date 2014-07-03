@@ -34,7 +34,7 @@ class Chip8(pyglet.window.Window):
                         pyglet.window.key.V: 0xf}
         self.pixel = pyglet.image.load('pixel.png')
         self.cpu = cpu.CPU()
-        self.cpu.load_rom('utils/programs/Life.ch8')
+        self.cpu.load_rom('utils/demos/Trip8 Demo.ch8')
         self.clear()
         self.set_vsync(False)
 

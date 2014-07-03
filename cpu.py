@@ -279,8 +279,7 @@ class CPU(object):
                     self.gpio[0xf] = 1
                 self.graphics[loc] ^= curr_pixel
             row += 1
-        if self.gpio[0xf] == 0:
-            self.should_draw = True
+        self.should_draw = True
 
     def _ezzz(self):
         self._op_filter(self.opcode & 0xf00f)
@@ -288,6 +287,7 @@ class CPU(object):
     def _ex9e(self):
         # Skips the next instruction if the key stored in VX is pressed
         key = self.gpio[self.vx] & 0xf
+        print key
         if self.key_inputs[key] == 1:
             self.pc += 2
 

@@ -18,12 +18,10 @@ class Debugger(pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
         super(Debugger, self).__init__(*args, **kwargs)
-        self.dasm_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=5, y=40 + i * 10, anchor_x='left',
-                                              anchor_y='top') for i in range(60)]
+        self.dasm_labels = [pyglet.text.Label(font_size=10, x=5, y=40 + i * 12) for i in range(60)]
         self.dasm = disassembler.Disassembler()
-        self.gpio_labels = [pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=400 + i * 10, anchor_x='left',
-                                              anchor_y='top') for i in range(0x10)]
-        self.index_label = pyglet.text.Label(font_name='Consolas', font_size=11, x=300, y=150)
+        self.gpio_labels = [pyglet.text.Label(font_size=10, x=300, y=400 + i * 12) for i in range(0x10)]
+        self.index_label = pyglet.text.Label(font_size=10, x=300, y=150)
         self.history = []
         self.set_vsync(False)
         self.emulator = None

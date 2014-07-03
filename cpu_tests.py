@@ -238,7 +238,10 @@ class OpcodeTests(unittest.TestCase):
         self.assertTrue(False)
 
     def test_fx07(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xf0
+        self.cpu.memory[0x201] = 0x07
+        self.cpu.delay_timer = 0x12
+        self.cpu.cycle()
 
     def test_fx0a(self):
         self.assertTrue(False)
