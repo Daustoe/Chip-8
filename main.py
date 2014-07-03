@@ -9,10 +9,12 @@ on a return from subroutine, we are hoping to next opcode, we may be skipping so
 To check this we need to disassemble the rom itself so we can follow along with each cycle and double
 check that everything is working as it should.
 """
+from chipy8 import debugger
+from chipy8 import chip8
+
 __author__ = 'Clayton Powell'
-import chip8
+import chipy8
 import pyglet
-import debugger
 
 
 def update(dt):
@@ -28,5 +30,5 @@ if __name__ == '__main__':
     emulator = chip8.Chip8(640, 320)
     dbg = debugger.Debugger(800, 600)
     dbg.hook(emulator)
-    pyglet.clock.schedule_interval(update, 1/600.0)
+    pyglet.clock.schedule_interval(update, 1/1000.0)
     pyglet.app.run()
