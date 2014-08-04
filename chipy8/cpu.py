@@ -34,7 +34,7 @@ class CPU(object):
     CPU class that emulates the Chip 8 cpu for the entire program.
     """
     def __init__(self):
-        self.memory = [0] * 4096
+        self.memory = []
         self.gpio = [0] * 16
         self.graphics = [0] * 64 * 32
         self.stack = []
@@ -49,9 +49,6 @@ class CPU(object):
         self.vy = 0
         self.is_paused = False
         self.previous_pc = None
-        for i in range(0, 80):
-            self.memory[i] = fonts[i]
-
         self.op_map = {0x0000: self._0zzz,
                        0x00e0: self._00e0,
                        0x00ee: self._00ee,
@@ -97,9 +94,30 @@ class CPU(object):
         standard for Chip 8 interpreters as anything before 0x200 was typically reserved.
         :param rom_path:
         """
+        self.reset()
         rom = open(rom_path, "rb").read()
         for index in range(0, len(rom)):
             self.memory[index + 0x200] = ord(rom[index])
+
+    def reset(self):
+        """Reset memory to be empty. Useful for reloading roms and making sure there is no residue of previous rom"""
+        self.memory = [0] * 4096
+        for i in range(0, 80):
+            self.memory[i] = fonts[i]
+        self.gpio = [0] * 16
+        self.graphics = [0] * 64 * 32
+        self.stack = []
+        self.key_inputs = [0] * 16
+        self.opcode = 0
+        self.index = 0
+        self.delay_timer = 0
+        self.sound_timer = 0
+        self.should_draw = True
+        self.pc = 0x200
+        self.vx = 0
+        self.vy = 0
+        self.is_paused = False
+        self.previous_pc = None
 
     def _op_filter(self, opcode):
         try:
@@ -287,7 +305,6 @@ class CPU(object):
     def _ex9e(self):
         # Skips the next instruction if the key stored in VX is pressed
         key = self.gpio[self.vx] & 0xf
-        print key
         if self.key_inputs[key] == 1:
             self.pc += 2
 
@@ -342,10 +359,10 @@ class CPU(object):
 
     def _fx55(self):
         # Stores V0 to VX in memory starting at address I
-        for index in range(0, self.vx):
+        for index in range(0, self.vx + 1):
             self.memory[self.index + index] = self.gpio[index]
 
     def _fx65(self):
         # Fills V0 to VX with values from memory starting at address I
-        for index in range(0, self.vx):
+        for index in range(0, self.vx + 1):
             self.gpio[index] = self.memory[self.index + index]

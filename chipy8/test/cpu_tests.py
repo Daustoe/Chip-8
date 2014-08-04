@@ -7,7 +7,7 @@ __author__ = 'cjpowell'
 import unittest
 
 
-class OpcodeTests(unittest.TestCase):
+class Chip8OpcodeTests(unittest.TestCase):
     def setUp(self):
         self.cpu = cpu.CPU()
 
@@ -233,19 +233,40 @@ class OpcodeTests(unittest.TestCase):
         self.assertListEqual(self.cpu.graphics[1:], [0] * 2047)
 
     def test_ex9e(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xe0
+        self.cpu.memory[0x201] = 0x9e
+        self.cpu.gpio[0] = 1
+        self.cpu.key_inputs[1] = 1
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.pc, 0x204)
 
     def test_exa1(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xe0
+        self.cpu.memory[0x201] = 0xa1
+        self.cpu.gpio[0] = 1
+        self.cpu.key_inputs[1] = 1
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.pc, 0x202)
+        self.cpu.pc = 0x200
+        self.cpu.key_inputs[1] = 0
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.pc, 0x204)
 
     def test_fx07(self):
         self.cpu.memory[0x200] = 0xf0
         self.cpu.memory[0x201] = 0x07
         self.cpu.delay_timer = 0x12
         self.cpu.cycle()
+        self.assertEqual(self.cpu.gpio[0], 0x12)
 
     def test_fx0a(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xf0
+        self.cpu.memory[0x201] = 0x0a
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.pc, 0x200)
+        self.cpu.key_inputs[0] = 1
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.pc, 0x202)
 
     def test_fx15(self):
         self.cpu.memory[0x200] = 0xf0
@@ -283,10 +304,31 @@ class OpcodeTests(unittest.TestCase):
         self.assertEqual(self.cpu.index, 0x5)
 
     def test_fx33(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xf0
+        self.cpu.memory[0x201] = 0x33
+        self.cpu.gpio[0] = 0xff
+        self.cpu.index = 0x100
+        self.cpu.cycle()
+        self.assertListEqual(self.cpu.memory[0x100:0x103], [2, 5, 5])
 
     def test_fx55(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xf1
+        self.cpu.memory[0x201] = 0x55
+        self.cpu.gpio[0] = 0xa
+        self.cpu.gpio[1] = 0xf
+        self.cpu.index = 0x100
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.memory[0x100], 0xa)
+        self.assertEqual(self.cpu.memory[0x101], 0xf)
 
     def test_fx65(self):
-        self.assertTrue(False)
+        self.cpu.memory[0x200] = 0xf1
+        self.cpu.memory[0x201] = 0x65
+        self.cpu.index = 0x100
+        self.cpu.memory[0x100] = 0x3
+        self.cpu.memory[0x101] = 0xf
+        self.cpu.gpio[2] = 0x2
+        self.cpu.cycle()
+        self.assertEqual(self.cpu.memory[0x100], self.cpu.gpio[0])
+        self.assertEqual(self.cpu.memory[0x101], self.cpu.gpio[1])
+        self.assertNotEqual(self.cpu.memory[0x102], self.cpu.gpio[2])

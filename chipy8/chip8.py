@@ -35,9 +35,15 @@ class Chip8(pyglet.window.Window):
                         pyglet.window.key.V: 0xf}
         self.pixel = pyglet.image.load('chipy8/resources/pixel.png')
         self.cpu = cpu.CPU()
-        self.cpu.load_rom('chipy8/resources/games/Pong.ch8')
         self.clear()
         self.set_vsync(False)
+
+    def load_rom(self, rom_path):
+        """
+        Hands off to the cpu to load the given rom.
+        :param rom_path
+        """
+        self.cpu.load_rom(rom_path)
 
     def on_key_press(self, symbol, modifiers):
         """
