@@ -1,12 +1,5 @@
 """
 Chip 8 CPU module.
-
-Notes:
-Currently there is a problem with how Chip 8 programs expect the interpreter to draw sprites.
-Because of this there is a blinking/flickering effect. The program clears a sprite, we draw, the program writes
-a sprite, we draw.
-
-It should be program clears a sprite, program writes a sprite, we Draw
 """
 __author__ = 'Clayton Powell'
 import random
@@ -34,7 +27,7 @@ class CPU(object):
     CPU class that emulates the Chip 8 cpu for the entire program.
     """
     def __init__(self):
-        self.memory = []
+        self.memory = [0] * 4096
         self.gpio = [0] * 16
         self.graphics = [0] * 64 * 32
         self.stack = []
@@ -100,7 +93,9 @@ class CPU(object):
             self.memory[index + 0x200] = ord(rom[index])
 
     def reset(self):
-        """Reset memory to be empty. Useful for reloading roms and making sure there is no residue of previous rom"""
+        """
+        Reset memory to be empty. Useful for reloading roms and making sure there is no residue of previous rom
+        """
         self.memory = [0] * 4096
         for i in range(0, 80):
             self.memory[i] = fonts[i]
