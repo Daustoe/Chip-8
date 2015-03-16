@@ -90,7 +90,7 @@ class CPU(object):
         self.reset()
         rom = open(rom_path, "rb").read()
         for index in range(0, len(rom)):
-            self.memory[index + 0x200] = ord(rom[index])
+            self.memory[index + 0x200] = rom[index]
 
     def reset(self):
         """
@@ -119,7 +119,7 @@ class CPU(object):
             function = self.op_map[opcode]
             function()
         except KeyError:
-            print "Unknown instruction: %X" % self.opcode
+            print("Unknown instruction: %X" % self.opcode)
 
     def cycle(self):
         """

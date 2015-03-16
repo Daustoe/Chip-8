@@ -2,7 +2,7 @@
 Notes:
 May want to look into PySide or PyQT in order to get a better gui system for our debugger.
 """
-import cpu
+import chipy8.cpu as cpu
 
 __author__ = 'Clayton Powell'
 import pyglet

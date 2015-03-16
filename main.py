@@ -14,6 +14,9 @@ __author__ = 'Clayton Powell'
 from chipy8 import chip8
 import pyglet
 from time import sleep
+import cProfile
+import pstats
+import io
 
 
 def intro_sequence():
@@ -32,10 +35,11 @@ def intro_update(dt):
         emulator.cpu.cycle()
     else:
         sleep(5)
+        # TODO: Need to come up with a better method here, this hangs the window while sleeping.
         # Start select game sequence
         # load selected game
-        emulator.load_rom('chipy8/resources/games/Missile.ch8')
-        pyglet.clock.schedule_interval(update, 1/1000.0)
+        emulator.load_rom('chipy8/resources/demos/Particle Demo.ch8')
+        pyglet.clock.schedule_interval(update, 2)
 
 
 def update(dt):
@@ -48,7 +52,15 @@ def update(dt):
         # dbg.update_disassembly(emulator.cpu.previous_pc, emulator.cpu.opcode)
 
 if __name__ == '__main__':
+    profile = cProfile.Profile()
     emulator = chip8.Chip8(640, 320)
+    fps_display = pyglet.clock.ClockDisplay()
+    profile.enable()
     intro_sequence()
     # dbg = debugger.Debugger(800, 600)
     # dbg.hook(emulator)
+    profile.disable()
+    stream = io.StringIO()
+    ps = pstats.Stats(profile, stream=stream).sort_stats('cumulative')
+    ps.print_stats()
+    print(stream.getvalue())
