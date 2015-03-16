@@ -1,5 +1,5 @@
 <snippet>
-  <content><![CDATA[
+  <content>
 # Chip-8
 
 Python Chip 8 emulator.
@@ -23,6 +23,6 @@ TODO: Write usage instructions
 ## License
 
 TODO: Write license
-]]></content>
+</content>
   <tabTrigger>readme</tabTrigger>
 </snippet>
