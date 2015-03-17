@@ -34,12 +34,15 @@ def intro_update(dt):
     if emulator.cpu.opcode != 0x1210:
         emulator.cpu.cycle()
     else:
-        sleep(5)
-        # TODO: Need to come up with a better method here, this hangs the window while sleeping.
+        pyglet.clock.unschedule(intro_update)
+        pyglet.clock.schedule_once(load_rom, 5)
         # Start select game sequence
         # load selected game
-        emulator.load_rom('chipy8/resources/demos/Particle Demo.ch8')
-        pyglet.clock.schedule_interval(update, 2)
+        pyglet.clock.schedule_interval(update, 1/1000.0)
+
+
+def load_rom(dt):
+    emulator.load_rom('chipy8/resources/demos/Particle Demo.ch8')
 
 
 def update(dt):
@@ -55,11 +58,9 @@ if __name__ == '__main__':
     profile = cProfile.Profile()
     emulator = chip8.Chip8(640, 320)
     fps_display = pyglet.clock.ClockDisplay()
-    profile.enable()
     intro_sequence()
     # dbg = debugger.Debugger(800, 600)
     # dbg.hook(emulator)
-    profile.disable()
     stream = io.StringIO()
     ps = pstats.Stats(profile, stream=stream).sort_stats('cumulative')
     ps.print_stats()

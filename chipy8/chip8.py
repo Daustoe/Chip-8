@@ -74,4 +74,3 @@ class Chip8(pyglet.window.Window):
                 if self.cpu.graphics[i] == 1:
                     self.pixel.blit((i % 64) * 10, 310 - ((i / 64) * 10))
             self.cpu.should_draw = False
-            self.flip()
