@@ -6,7 +6,7 @@ import pyglet
 def intro_sequence():
     """Performs the intro sequence for the emulator, allows game selection."""
     emulator.load_rom('chipy8/resources/programs/Chip8 emulator Logo.ch8')
-    pyglet.clock.schedule_interval(intro_update, 1/1000.0)
+    pyglet.clock.schedule(intro_update)
     pyglet.app.run()
 
 
@@ -19,8 +19,8 @@ def intro_update(dt):
         emulator.cpu.cycle()
     else:
         pyglet.clock.unschedule(intro_update)
-        pyglet.clock.schedule_once(load_rom, 5)
-        pyglet.clock.schedule_interval(update, 1/1000.0)
+        pyglet.clock.schedule_once(load_rom, 3)
+        pyglet.clock.schedule(update)
 
 
 def load_rom(dt):
@@ -28,7 +28,7 @@ def load_rom(dt):
     loads the chosen rom for the chip8 emulator
     """
     emulator.blit_list = set()
-    emulator.load_rom('chipy8/resources/demos/Particle Demo.ch8')
+    emulator.load_rom('chipy8/resources/demos/Sirpinski.ch8')
 
 
 def update(dt):
@@ -40,5 +40,6 @@ def update(dt):
         emulator.cpu.cycle()
 
 if __name__ == '__main__':
-    emulator = chip8.Chip8(640, 320)
+    template = pyglet.gl.Config(double_buffer=False)
+    emulator = chip8.Chip8(640, 320, config=template)
     intro_sequence()
