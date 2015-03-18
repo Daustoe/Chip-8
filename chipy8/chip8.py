@@ -65,18 +65,14 @@ class Chip8(pyglet.window.Window):
         if symbol in self.key_map.keys():
             self.cpu.key_inputs[self.key_map[symbol]] = 0
 
-    def blit(self, index):
-        if self.cpu.graphics[index] == 1:
-            self.blit_list.add(index)
-        elif self.cpu.graphics[index] == 0:
-            self.blit_list.remove(index)
-
     def on_draw(self):
         """
         Draw method for the Window.
         """
         if self.cpu.should_draw:
             self.clear()
-            for i in self.blit_list:
-                self.pixel.blit((i % 64) * 10, 310 - (int(i / 64) * 10))
+            for x in range(64):
+                for y in range(32):
+                    if self.cpu.graphics[x][y] == 1:
+                        self.pixel.blit(x * 10, 310 - y * 10)
         self.cpu.should_draw = False

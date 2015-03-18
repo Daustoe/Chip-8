@@ -30,7 +30,7 @@ class CPU(object):
         self.memory = [0] * 4096
         self.emulator = emulator
         self.gpio = [0] * 16
-        self.graphics = [0] * 64 * 32
+        self.graphics = [[0 for x in range(32)] for y in range(64)]
         self.stack = []
         self.key_inputs = [0] * 16
         self.opcode = 0
@@ -101,7 +101,7 @@ class CPU(object):
         for i in range(0, 80):
             self.memory[i] = fonts[i]
         self.gpio = [0] * 16
-        self.graphics = [0] * 64 * 32
+        self.graphics = [[0 for x in range(32)] for y in range(64)]
         self.stack = []
         self.key_inputs = [0] * 16
         self.opcode = 0
@@ -151,7 +151,7 @@ class CPU(object):
 
     def _00e0(self):
         # Clears the screen
-        self.graphics = [0] * 64 * 32
+        self.graphics = [[0 for x in range(32)] for y in range(64)]
         self.should_draw = True
         self.emulator.blit_list = set()
 
@@ -276,14 +276,13 @@ class CPU(object):
         y = self.gpio[self.vy] & 0xff
         height = self.opcode & 0x000f
         self.gpio[0xf] = 0
-        for y_line in range(height):
-            curr_row = self.memory[y_line + self.index]
-            for x_line in range(8):
-                if curr_row & (0x80 >> x_line) != 0:
-                    if self.graphics[x + x_line + ((y + y_line) * 64)]:
+        for y_offset in range(height):
+            curr_row = self.memory[y_offset + self.index]
+            for x_offset in range(8):
+                if curr_row & (0x80 >> x_offset) != 0:
+                    if self.graphics[x + x_offset][y + y_offset]:
                         self.gpio[0xf] = 1
-                    self.graphics[x + x_line + ((y + y_line) * 64)] ^= 1
-                    self.emulator.blit(x + x_line + ((y + y_line) * 64))
+                    self.graphics[x + x_offset][y + y_offset] ^= 1
         self.should_draw = True
 
     def _ezzz(self):
