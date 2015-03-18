@@ -26,8 +26,9 @@ class CPU(object):
     """
     CPU class that emulates the Chip 8 cpu for the entire program.
     """
-    def __init__(self):
+    def __init__(self, emulator):
         self.memory = [0] * 4096
+        self.emulator = emulator
         self.gpio = [0] * 16
         self.graphics = [0] * 64 * 32
         self.stack = []
@@ -152,6 +153,7 @@ class CPU(object):
         # Clears the screen
         self.graphics = [0] * 64 * 32
         self.should_draw = True
+        self.emulator.blit_list = set()
 
     def _00ee(self):
         # Returns from a subroutine
@@ -270,28 +272,18 @@ class CPU(object):
     def _dxyn(self):
         # Sprites stored in memory at location in index register (I), maximum 8bits wide. Wraps around the screen.
         # If when drawn, clears a pixel, register VF is set to 1 otherwise it is zero. All drawing is XOR drawing
-        # (e.g. it toggles the screen pixels)
-        self.gpio[0xf] = 0
         x = self.gpio[self.vx] & 0xff
         y = self.gpio[self.vy] & 0xff
         height = self.opcode & 0x000f
-        row = 0
         self.gpio[0xf] = 0
-        while row < height:
-            curr_row = self.memory[row + self.index]
-            pixel_offset = 0
-            while pixel_offset < 8:
-                loc = x + pixel_offset + ((y + row) * 64)
-                pixel_offset += 1
-                if (y + row) >= 32 or (x + pixel_offset - 1) >= 64:
-                    # ignore pixels outside the screen
-                    continue
-                mask = 1 << 8-pixel_offset
-                curr_pixel = (curr_row & mask) >> (8-pixel_offset)
-                if self.graphics[loc] == 1 and curr_pixel == 1:
-                    self.gpio[0xf] = 1
-                self.graphics[loc] ^= curr_pixel
-            row += 1
+        for y_line in range(height):
+            curr_row = self.memory[y_line + self.index]
+            for x_line in range(8):
+                if curr_row & (0x80 >> x_line) != 0:
+                    if self.graphics[x + x_line + ((y + y_line) * 64)]:
+                        self.gpio[0xf] = 1
+                    self.graphics[x + x_line + ((y + y_line) * 64)] ^= 1
+                    self.emulator.blit(x + x_line + ((y + y_line) * 64))
         self.should_draw = True
 
     def _ezzz(self):

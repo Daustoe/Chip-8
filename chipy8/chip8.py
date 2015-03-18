@@ -34,9 +34,10 @@ class Chip8(pyglet.window.Window):
                         pyglet.window.key.C: 0xb,
                         pyglet.window.key.V: 0xf}
         self.pixel = pyglet.image.load('chipy8/resources/pixel.png')
-        self.cpu = cpu.CPU()
+        self.cpu = cpu.CPU(self)
         self.clear()
         self.set_vsync(False)
+        self.blit_list = set()
 
     def load_rom(self, rom_path):
         """
@@ -64,13 +65,18 @@ class Chip8(pyglet.window.Window):
         if symbol in self.key_map.keys():
             self.cpu.key_inputs[self.key_map[symbol]] = 0
 
+    def blit(self, index):
+        if self.cpu.graphics[index] == 1:
+            self.blit_list.add(index)
+        elif self.cpu.graphics[index] == 0:
+            self.blit_list.remove(index)
+
     def on_draw(self):
         """
         Draw method for the Window.
         """
         if self.cpu.should_draw:
             self.clear()
-            for i in range(2048):
-                if self.cpu.graphics[i] == 1:
-                    self.pixel.blit((i % 64) * 10, 310 - ((i / 64) * 10))
-            self.cpu.should_draw = False
+            for i in self.blit_list:
+                self.pixel.blit((i % 64) * 10, 310 - (int(i / 64) * 10))
+        self.cpu.should_draw = False

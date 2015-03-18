@@ -4,7 +4,7 @@ Notes:
 We have a working disassembly output
 Now we want to start to include cpu control buttons, memory viewer
 """
-import disassembler
+import chipy8.disassembler
 
 __author__ = 'cjpowell'
 import pyglet
@@ -20,7 +20,7 @@ class Debugger(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         super(Debugger, self).__init__(*args, **kwargs)
         self.dasm_labels = [pyglet.text.Label(font_size=10, x=5, y=40 + i * 12) for i in range(60)]
-        self.dasm = disassembler.Disassembler()
+        self.dasm = chipy8.disassembler.Disassembler()
         self.gpio_labels = [pyglet.text.Label(font_size=10, x=300, y=400 + i * 12) for i in range(0x10)]
         self.index_label = pyglet.text.Label(font_size=10, x=300, y=150)
         self.history = []
@@ -32,7 +32,7 @@ class Debugger(pyglet.window.Window):
         rom = open(rom_path, "rb").read()
         for index in range(0, len(rom), 2):
             try:
-                print self.dasm.disassemble(0x200 + index, (ord(rom[index]) << 8) | ord(rom[index + 1]))
+                print(self.dasm.disassemble(0x200 + index, (ord(rom[index]) << 8) | ord(rom[index + 1])))
             except:
                 pass
 
@@ -81,4 +81,3 @@ class Debugger(pyglet.window.Window):
         for label in range(0x10):
             self.gpio_labels[label].text = hex(label) + ' ' + hex(self.emulator.cpu.gpio[label])[2:]
             self.gpio_labels[label].draw()
-        self.flip()

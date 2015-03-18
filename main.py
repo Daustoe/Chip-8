@@ -10,7 +10,7 @@ To check this we need to disassemble the rom itself so we can follow along with 
 check that everything is working as it should.
 """
 __author__ = 'Clayton Powell'
-# from chipy8 import debugger
+from chipy8 import debugger
 from chipy8 import chip8
 import pyglet
 from time import sleep
@@ -42,6 +42,10 @@ def intro_update(dt):
 
 
 def load_rom(dt):
+    """
+    loads the chosen rom for the chip8 emulator
+    """
+    emulator.blit_list = set()
     emulator.load_rom('chipy8/resources/demos/Particle Demo.ch8')
 
 
@@ -58,9 +62,9 @@ if __name__ == '__main__':
     profile = cProfile.Profile()
     emulator = chip8.Chip8(640, 320)
     fps_display = pyglet.clock.ClockDisplay()
+    #dbg = debugger.Debugger(800, 600)
+    #dbg.hook(emulator)
     intro_sequence()
-    # dbg = debugger.Debugger(800, 600)
-    # dbg.hook(emulator)
     stream = io.StringIO()
     ps = pstats.Stats(profile, stream=stream).sort_stats('cumulative')
     ps.print_stats()
