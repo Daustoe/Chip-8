@@ -37,7 +37,6 @@ class Chip8(pyglet.window.Window):
         self.cpu = cpu.CPU(self)
         self.clear()
         self.set_vsync(False)
-        self.blit_list = set()
 
     def load_rom(self, rom_path):
         """

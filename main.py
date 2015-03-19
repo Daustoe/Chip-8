@@ -1,6 +1,8 @@
 __author__ = 'Clayton Powell'
 from chipy8 import chip8
 import pyglet
+import cProfile
+import pstats
 
 
 def intro_sequence():
@@ -28,7 +30,7 @@ def load_rom(dt):
     loads the chosen rom for the chip8 emulator
     """
     emulator.blit_list = set()
-    emulator.load_rom('chipy8/resources/demos/Sirpinski.ch8')
+    emulator.load_rom('chipy8/resources/demos/Trip8 Demo.ch8')
 
 
 def update(dt):
@@ -42,4 +44,6 @@ def update(dt):
 if __name__ == '__main__':
     template = pyglet.gl.Config(double_buffer=False)
     emulator = chip8.Chip8(640, 320, config=template)
-    intro_sequence()
+    cProfile.run('intro_sequence()', 'stats')
+    p = pstats.Stats('stats')
+    p.sort_stats('cumulative').print_stats()
