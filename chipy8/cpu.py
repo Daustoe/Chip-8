@@ -339,9 +339,9 @@ class CPU(object):
 
     def _fx33(self):
         # Store a number as BCD
-        self.memory[self.index] = self.gpio[self.vx] / 100
-        self.memory[self.index + 1] = (self.gpio[self.vx] % 100) / 10
-        self.memory[self.index + 2] = self.gpio[self.vx] % 10
+        self.memory[self.index] = int(self.gpio[self.vx] / 100)
+        self.memory[self.index + 1] = int(self.gpio[self.vx] / 10) % 10
+        self.memory[self.index + 2] = (self.gpio[self.vx] % 10)
 
     def _fx55(self):
         # Stores V0 to VX in memory starting at address I

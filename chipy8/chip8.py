@@ -45,6 +45,12 @@ class Chip8(pyglet.window.Window):
         """
         self.cpu.load_rom(rom_path)
 
+    def main(self):
+        while not self.has_exit:
+            self.dispatch_events()
+            self.cpu.cycle()
+            self.draw()
+
     def on_key_press(self, symbol, modifiers):
         """
         Determines what should be done on a key press. Overrides the pyglet Window definition of this method. Looks up
@@ -64,7 +70,7 @@ class Chip8(pyglet.window.Window):
         if symbol in self.key_map.keys():
             self.cpu.key_inputs[self.key_map[symbol]] = 0
 
-    def on_draw(self):
+    def draw(self):
         """
         Draw method for the Window.
         """
@@ -75,3 +81,4 @@ class Chip8(pyglet.window.Window):
                     if self.cpu.graphics[x][y] == 1:
                         self.pixel.blit(x * 10, 310 - y * 10)
         self.cpu.should_draw = False
+        self.flip()

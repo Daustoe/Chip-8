@@ -22,7 +22,6 @@ def intro_update(dt):
     else:
         pyglet.clock.unschedule(intro_update)
         pyglet.clock.schedule_once(load_rom, 3)
-        pyglet.clock.schedule(update)
 
 
 def load_rom(dt):
@@ -30,16 +29,8 @@ def load_rom(dt):
     loads the chosen rom for the chip8 emulator
     """
     emulator.blit_list = set()
-    emulator.load_rom('chipy8/resources/demos/Trip8 Demo.ch8')
-
-
-def update(dt):
-    """
-    Update method for both debugger and the cpu.
-    :param dt:
-    """
-    if not emulator.cpu.is_paused:
-        emulator.cpu.cycle()
+    emulator.load_rom('chipy8/resources/programs/Division Test.ch8')
+    emulator.main()
 
 if __name__ == '__main__':
     template = pyglet.gl.Config(double_buffer=False)
