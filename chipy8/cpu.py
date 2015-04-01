@@ -137,8 +137,7 @@ class CPU(object):
         if self.sound_timer > 0:
             self.sound_timer -= 1
             if self.sound_timer == 0:
-                # Play a sound!
-                pass
+                self.emulator.beep.play()
 
     def _get_key(self):
         for index in range(16):
@@ -152,8 +151,8 @@ class CPU(object):
     def _00e0(self):
         # Clears the screen
         self.graphics = [[0 for x in range(32)] for y in range(64)]
-        self.should_draw = True
-        self.emulator.blit_list = set()
+        self.emulator.clear()
+        self.emulator.flip()
 
     def _00ee(self):
         # Returns from a subroutine
@@ -279,11 +278,14 @@ class CPU(object):
         for y_offset in range(height):
             curr_row = self.memory[y_offset + self.index]
             for x_offset in range(8):
+                if y + y_offset >= 32 or (x + x_offset) >= 64:
+                    continue
                 if curr_row & (0x80 >> x_offset) != 0:
                     if self.graphics[x + x_offset][y + y_offset]:
                         self.gpio[0xf] = 1
                     self.graphics[x + x_offset][y + y_offset] ^= 1
-        self.should_draw = True
+                    self.emulator.draw_pixel(x + x_offset, y + y_offset)
+        self.emulator.flip()
 
     def _ezzz(self):
         self._op_filter(self.opcode & 0xf0ff)

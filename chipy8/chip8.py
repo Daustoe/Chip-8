@@ -33,7 +33,10 @@ class Chip8(pyglet.window.Window):
                         pyglet.window.key.X: 0,
                         pyglet.window.key.C: 0xb,
                         pyglet.window.key.V: 0xf}
-        self.pixel = pyglet.image.load('chipy8/resources/pixel.png')
+        self.white_pixel = pyglet.image.load('chipy8/resources/pixel.png')
+        pattern = pyglet.image.SolidColorImagePattern(color=(0, 0, 0, 0))
+        self.black_pixel = pattern.create_image(10, 10)
+        self.beep = pyglet.resource.media('chipy8/resources/buzz.wav', streaming=False)
         self.cpu = cpu.CPU(self)
         self.clear()
         self.set_vsync(False)
@@ -46,10 +49,12 @@ class Chip8(pyglet.window.Window):
         self.cpu.load_rom(rom_path)
 
     def main(self):
-        while not self.has_exit:
+        """
+        Main loop of the emulator. Handles keyboard events and cpu cycle
+        """
+        if not self.has_exit:
             self.dispatch_events()
             self.cpu.cycle()
-            self.draw()
 
     def on_key_press(self, symbol, modifiers):
         """
@@ -70,15 +75,14 @@ class Chip8(pyglet.window.Window):
         if symbol in self.key_map.keys():
             self.cpu.key_inputs[self.key_map[symbol]] = 0
 
-    def draw(self):
+    def draw_pixel(self, x, y):
         """
-        Draw method for the Window.
+        Draws an individual pixel to the screen (how the chip 8 emulator actually does things).
+        :param x:
+        :param y:
+        :return:
         """
-        if self.cpu.should_draw:
-            self.clear()
-            for x in range(64):
-                for y in range(32):
-                    if self.cpu.graphics[x][y] == 1:
-                        self.pixel.blit(x * 10, 310 - y * 10)
-        self.cpu.should_draw = False
-        self.flip()
+        if self.cpu.graphics[x][y] == 1:
+            self.white_pixel.blit(x * 10, 310 - y * 10)
+        else:
+            self.black_pixel.blit(x * 10, 310 - y * 10)

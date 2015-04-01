@@ -1,8 +1,6 @@
 __author__ = 'Clayton Powell'
 from chipy8 import chip8
 import pyglet
-import cProfile
-import pstats
 
 
 def intro_sequence():
@@ -28,13 +26,16 @@ def load_rom(dt):
     """
     loads the chosen rom for the chip8 emulator
     """
-    emulator.blit_list = set()
-    emulator.load_rom('chipy8/resources/programs/Division Test.ch8')
+    emulator.clear()
+    emulator.load_rom('chipy8/resources/games/Pong.ch8')
+    pyglet.clock.schedule_interval(main_loop, 1/1000)
+
+
+def main_loop(dt):
     emulator.main()
+
 
 if __name__ == '__main__':
     template = pyglet.gl.Config(double_buffer=False)
     emulator = chip8.Chip8(640, 320, config=template)
-    cProfile.run('intro_sequence()', 'stats')
-    p = pstats.Stats('stats')
-    p.sort_stats('cumulative').print_stats()
+    intro_sequence()
