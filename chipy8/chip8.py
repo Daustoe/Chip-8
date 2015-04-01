@@ -1,10 +1,4 @@
-"""
-Notes:
-May want to look into PySide or PyQT in order to get a better gui system for our debugger.
-"""
 import chipy8.cpu as cpu
-
-__author__ = 'Clayton Powell'
 import pyglet
 
 
@@ -48,7 +42,7 @@ class Chip8(pyglet.window.Window):
         """
         self.cpu.load_rom(rom_path)
 
-    def main(self):
+    def main(self, dt):
         """
         Main loop of the emulator. Handles keyboard events and cpu cycle
         """

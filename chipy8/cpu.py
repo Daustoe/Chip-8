@@ -1,7 +1,3 @@
-"""
-Chip 8 CPU module.
-"""
-__author__ = 'Clayton Powell'
 import random
 
 fonts = [0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
