@@ -22,15 +22,13 @@ def start(dt):
     loads the chosen rom for the chip8 emulator
     """
     emulator.clear()
-    if len(sys.argv) <= 1:
-        raise IOError('Unable to find ROM to run.')
-    emulator.load_rom(sys.argv[1])
+    emulator.load_rom(args.rom)
     pyglet.clock.schedule_interval(emulator.main, 1/1000)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("rom path", type=str, help="file path to the Chip8 Rom you wish to run.")
+    parser.add_argument("rom", type=str, help="File path to the Chip8 Rom you wish to run.")
     args = parser.parse_args()
     template = pyglet.gl.Config(double_buffer=False)
     emulator = chip8.Chip8(640, 320, config=template)
