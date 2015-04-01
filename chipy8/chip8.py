@@ -45,6 +45,8 @@ class Chip8(pyglet.window.Window):
     def main(self, dt):
         """
         Main loop of the emulator. Handles keyboard events and cpu cycle
+        :param dt:
+            time delta, used because this is a scheduled function
         """
         if not self.has_exit:
             self.dispatch_events()
@@ -62,7 +64,7 @@ class Chip8(pyglet.window.Window):
 
     def on_key_release(self, symbol, modifiers):
         """
-        Functions the same as the on_key_press, but for key stroke up.
+        Same as on_key_press but with key release.
         :param symbol:
         :param modifiers:
         """
@@ -71,7 +73,8 @@ class Chip8(pyglet.window.Window):
 
     def draw_pixel(self, x, y):
         """
-        Draws an individual pixel to the screen (how the chip 8 emulator actually does things).
+        Draws an individual pixel to the screen (how the chip 8 emulator actually does things). We flip() in specific
+        cpu calls where it makes sense.
         :param x:
         :param y:
         :return:

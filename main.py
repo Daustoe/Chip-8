@@ -1,7 +1,5 @@
-__author__ = 'Clayton Powell'
 from chipy8 import chip8
 import pyglet
-import sys
 import argparse
 
 
@@ -31,7 +29,7 @@ if __name__ == '__main__':
     parser.add_argument("rom", type=str, help="File path to the Chip8 Rom you wish to run.")
     args = parser.parse_args()
     template = pyglet.gl.Config(double_buffer=False)
-    emulator = chip8.Chip8(640, 320, config=template)
+    emulator = chip8.Chip8(640, 320, config=template, caption="Chip 8 Emulator")
     emulator.load_rom('chipy8/resources/programs/Chip8 emulator Logo.ch8')
     pyglet.clock.schedule(intro_update)
     pyglet.app.run()
