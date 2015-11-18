@@ -18,6 +18,7 @@ def intro_update(dt):
 def start(dt):
     """
     loads the chosen rom for the chip8 emulator
+    :param dt:
     """
     emulator.clear()
     emulator.load_rom(args.rom)
