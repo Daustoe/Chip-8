@@ -47,17 +47,16 @@ class Chip8(Canvas):
         :param rom_path
             system path to ROM to be loaded by emulator
         """
+        print(rom_path)
         self.cpu.load_rom(rom_path)
 
-    def main(self, dt):
+    def main(self):
         """
         Main loop of the emulator. Handles keyboard events and cpu cycle
         :param dt:
             time delta between cpu 'cycles'
         """
-        if not self.has_exit:
-            self.dispatch_events()
-            self.cpu.cycle()
+        self.cpu.cycle()
 
     def on_key_press(self, event):
         """

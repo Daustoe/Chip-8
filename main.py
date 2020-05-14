@@ -11,4 +11,7 @@ app.bind("<Key>", app.on_key_press)
 app.bind("<KeyRelease>", app.on_key_release)
 app.focus_set()
 app.pack()
-root.mainloop()
+while True:
+    app.update_idletasks()
+    app.update()
+    app.main()

@@ -125,6 +125,7 @@ class CPU(object):
         :param opcode
             value to check against the mapping table.
         """
+        print(opcode)
         try:
             function = self.op_map[opcode]
             function()
@@ -135,6 +136,7 @@ class CPU(object):
         """
         Performs one cpu cycle.
         """
+        print(self.memory)
         self.previous_pc = self.pc
         self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1]
         self.pc += 2
