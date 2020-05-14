@@ -7,6 +7,7 @@ root.geometry("400x300")
 
 
 app = chip8.Chip8(root)
+app.load_rom()
 app.bind("<Key>", app.on_key_press)
 app.bind("<KeyRelease>", app.on_key_release)
 app.focus_set()
