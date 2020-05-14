@@ -449,4 +449,4 @@ class CPU(object):
         Fill V0 to VX with values from memory starting at address in register I.
         """
         for index in range(0, self.vx + 1):
-        self.gpio[index] = self.memory[self.index + index]
+            self.gpio[index] = self.memory[self.index + index]
